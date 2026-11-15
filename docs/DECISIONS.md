@@ -45,6 +45,8 @@ These were made to get a first version written. Each can be changed; say so befo
 | C9 | Holding a web while standing reels you in by itself. | A one-button device can then start a swing from the ground. | May feel odd with the mouse; it is one switch in `SwingSettings.cs`. |
 | C10 | With a wrist device, pointing near the screen edge turns the view. | The game can then be played with one hand. | Unproven; needs a playtest. |
 | C11 | The flex sensor is the hold trigger, and recentring gets its own button and also happens at each countdown. | The infrared sensor could only fire once, and its 2-second cover would recentre during a long swing. | One more button to wire. |
+| C18 | The game adds its own smoothing after the head-tracking package instead of changing the package. | The package stays an untouched copy, and the extra step can be switched off to compare. | Two layers of filtering to understand. |
+| C19 | Swinging is helped: webs shorten to clear the street and to gain height, and letting go on the way up adds 8% speed. | Plain pendulum physics was too hard: an automatic pilot could not get past ring 2. | Less realistic. Every one is a slider on F3 and a number in `SwingSettings.cs`. |
 | C12 | Nothing committed uses the Spider-Man name, suit, logo, music or sounds. The working title is Manhattan Swing. | The repository is public. | Follows from S11; revisit when character work starts. |
 | C13 | The head-tracking package is copied into `Game/Packages/` instead of being downloaded by Unity. | Opening the project then needs no Git download and cannot fail on a laptop without Git on its path. | Updating the package means copying a newer version in. |
 | C14 | Head tracking is compiled separately and only when the package is present; it starts switched off. | The game must run without a webcam or the package. | One extra small interface (`IHeadTracking`). |
@@ -58,9 +60,9 @@ These were made to get a first version written. Each can be changed; say so befo
 | --- | --- | --- |
 | Q1 | Which laptop on the team is the weakest (CPU, graphics, RAM)? It will show up when everyone reports their frame rate. | The frame-rate target in the budget. |
 | Q2 | Does head tracking run fast enough on the booth laptops with the game? Not known until it is added and measured. | Whether the existing tracker is kept or changed. |
-| Q3 | How did the first run feel: frame rate, the swing, the route? Only "works well" is recorded so far. | What to tune first. |
+| Q3 | What exactly should improve in the swing and controls? For example: hard to gain height, hard to turn corners, hits walls, too fast or slow, mouse too sensitive, the web misses. | What to tune first. |
 | Q4 | With head tracking on, the view is as wide as the real monitor looks from the seat, which is narrower than the ordinary view. Is that good for swinging, or should the window be made to act wider? | Head tracking tuning. |
-| Q5 | Does typing a Korean name work on the name screen? | Booth turn. |
+| Q5 | Does typing a Korean name work on the name screen? (The name screen works; Hangul is not confirmed.) | Booth turn. |
 | Q6 | Who owns which piece of work? Deferred. | Issues and reviews. |
 | Q7 | In 1부 the two laptops keep separate leaderboards. Compare the top 3 by hand at 10:30, or send both to one file over the LAN? | Prizes. |
 | Q8 | At the booth, should R (run again with the same name) be switched off? | Fair turns. |

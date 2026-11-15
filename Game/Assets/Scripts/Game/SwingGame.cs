@@ -77,6 +77,8 @@ namespace Swing.Game
 
             System.Numerics.Vector3 before = player.Body.Position;
             bool frozen = race.State == RaceState.Waiting || race.State == RaceState.Countdown;
+            if (tracking != null && tracking.TurnWithHead && race.State != RaceState.Waiting)
+                input.Look.x += HeadTurn.DegreesPerSecond(tracking.HeadYawDegrees) * deltaTime;
             player.Tick(deltaTime, input, frozen);
             if (player.FiredThisFrame) sound.WebShoot();
             if (player.AttachedThisFrame) sound.WebAttach();

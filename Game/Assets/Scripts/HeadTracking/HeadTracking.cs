@@ -16,13 +16,15 @@ namespace Swing.HeadTracking
     public sealed class HeadTracking : IHeadTracking
     {
         private const string WidthKey = "screenWidthCm", HeightKey = "screenHeightCm", DistanceKey = "eyeDistanceCm";
-        private const string OnKey = "headTrackingOn";
+        private const string OnKey = "headTrackingOn", SmoothKey = "headSmoothing";
+        private const string TurnKey = "headTurn", FlipKey = "headTurnFlip";
 
         private readonly Camera camera;
         private readonly Transform screen;            // the physical monitor, placed in front of the eyes
         private readonly HeadTrackedDisplay display;
         private readonly PythonBridgeSource source;   // listens for the webcam tracker on this laptop
         private readonly ScreenWindowFrame frame;
+        private readonly WindowSmoother smoother;    // our own smoothing, run after the package each frame
 
         public float ScreenWidthCm { get; set; }
         public float ScreenHeightCm { get; set; }
@@ -61,6 +63,13 @@ namespace Swing.HeadTracking
             frame.Configure(display);
             frame.EffectEnabled = false;
 
+            smoother = camera.gameObject.AddComponent<WindowSmoother>();
+            smoother.Display = display;
+            smoother.Camera = camera;
+            Smoothing = PlayerPrefs.GetInt(SmoothKey, 1) == 1;
+            TurnWithHead = PlayerPrefs.GetInt(TurnKey, 0) == 1;
+            FlipHeadTurn = PlayerPrefs.GetInt(FlipKey, 0) == 1;
+
             Apply();
             On = PlayerPrefs.GetInt(OnKey, 0) == 1;
         }
@@ -85,6 +94,62 @@ namespace Swing.HeadTracking
         }
 
         public bool FaceFound { get { return display.enabled && display.IsTracking; } }
+
+        public bool Smoothing
+        {
+            get { return smoother.Smoothing; }
+            set
+            {
+                smoother.Smoothing = value;
+                // With our smoothing on, the package's own filter is set steadier when the head is
+                // still and quicker when it moves; the values come from the simulation in the tests.
+                // With it off, the package's own values are restored.
+                display.FilterMinimumCutoffHz = value ? 1f : 2f;
+                display.FilterSpeedCoefficient = value ? 30f : 15f;
+                PlayerPrefs.SetInt(SmoothKey, value ? 1 : 0);
+            }
+        }
+
+        public string Diagnostics
+        {
+            get
+            {
+                if (!display.enabled || !display.HasObservation) return "Tracker: no reports yet";
+                return string.Format("Tracker: {0:0} reports a second, picture {1:0} ms old",
+                    display.LatestObservation.trackerFps, display.ResultAgeMilliseconds);
+            }
+        }
+
+        private bool turnWithHead, flipHeadTurn;
+
+        public bool TurnWithHead
+        {
+            get { return turnWithHead; }
+            set { turnWithHead = value; PlayerPrefs.SetInt(TurnKey, value ? 1 : 0); }
+        }
+
+        public bool FlipHeadTurn
+        {
+            get { return flipHeadTurn; }
+            set { flipHeadTurn = value; PlayerPrefs.SetInt(FlipKey, value ? 1 : 0); }
+        }
+
+        public float HeadYawDegrees
+        {
+            get
+            {
+                if (!FaceFound || !display.LatestObservation.poseValid) return 0;
+                float yaw = display.LatestObservation.headEulerDegrees.y;
+                return flipHeadTurn ? -yaw : yaw;
+            }
+        }
+
+        public bool Recording { get { return smoother.Recording; } }
+
+        public string StartRecording()
+        {
+            return smoother.StartRecording();
+        }
 
         public string Status
         {

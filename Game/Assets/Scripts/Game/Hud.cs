@@ -196,7 +196,7 @@ namespace Swing.Game
 
         private void DrawSetup(HudInfo info)
         {
-            var area = new Rect(24, 70, 640, 800);
+            var area = new Rect(24, 70, 700, 980);
             Fill(area, new Color(0, 0, 0, 0.8f));
             GUILayout.BeginArea(Scaled(new Rect(area.x + 20, area.y + 16, area.width - 40, area.height - 32)));
             GUILayout.Label("SETUP   (F2 closes)", panelText);
@@ -237,6 +237,13 @@ namespace Swing.Game
                 GUILayout.Space(8 * scale);
                 if (GUILayout.Button("Capture face (sit normally, look at the screen)", panelButton))
                     Flash(tracking.CaptureFaceReference() ? "Face captured" : "No face found: is the tracker running?");
+                GUILayout.Label(tracking.Diagnostics, panelText);
+                tracking.Smoothing = GUILayout.Toggle(tracking.Smoothing, "  Extra smoothing (untick to compare)", panelText);
+                tracking.TurnWithHead = GUILayout.Toggle(tracking.TurnWithHead, "  Turn the view by turning your head", panelText);
+                if (tracking.TurnWithHead)
+                    tracking.FlipHeadTurn = GUILayout.Toggle(tracking.FlipHeadTurn, "  ...it turns the wrong way: flip it", panelText);
+                if (GUILayout.Button(tracking.Recording ? "Recording..." : "Record 20 seconds of head movement to a file", panelButton) && !tracking.Recording)
+                    Flash("Recording to " + tracking.StartRecording());
                 GUILayout.Label("Start the webcam tracker with:\n" + tracking.TrackerCommand, panelText);
             }
 

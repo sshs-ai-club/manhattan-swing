@@ -2,6 +2,7 @@
     "name": "Swing.HeadTracking",
     "rootNamespace": "Swing.HeadTracking",
     "references": [
+        "Swing.Core",
         "Swing.Game",
         "HeadTracked.Display"
     ],

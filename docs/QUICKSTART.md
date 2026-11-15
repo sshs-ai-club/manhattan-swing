@@ -39,6 +39,7 @@ Type a name and press **Enter** to start. After the finish, **R** runs again and
 | H | Head tracking on or off |
 | K | Capture the face reference for head tracking |
 | F2 | Setup panel: head tracking, monitor size, leaderboard reset |
+| F3 | Tuning panel: sliders for the swing and mouse sensitivity |
 | P | Log your position as a `ring` line, for making routes |
 | Esc | Free the mouse |
 
@@ -46,7 +47,7 @@ A gamepad, if one is connected, moves the reticle with its left stick and holds 
 
 ## 4. Run the tests
 
-**Window → General → Test Runner → EditMode → Run All.** There are 36 tests of the game rules.
+**Window → General → Test Runner → EditMode → Run All.** There are 44 tests of the game rules.
 
 ## When something is wrong
 
@@ -66,7 +67,7 @@ What was checked before this point is listed in the [plan](PLAN.md#where-we-are)
 | --- | --- |
 | `Game/Assets/Scripts/Core/` | The game rules as plain C#: collision, swing, route, race. No Unity types. |
 | `Game/Assets/Scripts/Game/` | The Unity side: drawing, input, camera, HUD |
-| `Game/Assets/Scripts/Core/SwingSettings.cs` | Every number that changes how swinging feels |
+| `Game/Assets/Scripts/Core/SwingSettings.cs` | Every number that changes how swinging feels. Try values live with F3, then write the good ones here. |
 | `Game/Assets/Scripts/Game/WristDevice.cs` | Reading the wrist device, with its settings at the top |
 | `Game/Assets/Scripts/Core/SoundSynth.cs` | The sound effects, made from maths |
 | `Game/Assets/Scripts/HeadTracking/` | Head tracking set-up for this game |

@@ -1,6 +1,6 @@
 # 천년제 부스 To-Do (Dec 29)
 
-Nov 15, 2026 · @SW · third revision, after the first run in Unity
+Nov 16, 2026 · @SW · fourth revision, after the second run in Unity
 
 ## Where we are
 
@@ -10,12 +10,13 @@ The first version opened and ran in Unity on Nov 15 (@SW: "works well"). A secon
 | --- | --- | --- |
 | Midtown as 6,899 box buildings in a 170 KB file | Runs | Opened in Unity by @SW |
 | City drawing, first-person swing, mouse input, rings, timer, HUD | Runs | Opened in Unity by @SW; feel and frame rate not yet reported |
-| Game rules: collision, swing, aim help, route, race, leaderboard, sound synthesis | Written | 36 automated tests pass outside Unity |
+| Game rules: collision, swing, aim help, route, race, leaderboard, sound synthesis, eye smoothing | Written | 44 automated tests pass outside Unity |
 | Draft route: 10 rings, 2.8 km, 6th Avenue → 57th Street → Park Avenue | Written | Every ring is in open air; not yet reported as playable |
-| Booth turn: type a name, countdown, run, result, next player | Written | Compiles; not run |
+| Booth turn: type a name, countdown, run, result, next player | Runs | @SW: the name screen works |
 | Leaderboard saved to a file, with a reset that keeps the old file | Written | Rules tested; file and screen not run |
-| Sounds: web, catch, ring, finish, countdown, wind that follows speed | Written | Samples tested; not heard |
-| Head tracking with an on/off switch and a setup panel | Written | Compiles against the package; no webcam |
+| Sounds: web, catch, ring, finish, countdown, wind that follows speed | Runs | @SW: sound plays |
+| Head tracking with an on/off switch and a setup panel | Runs | @SW: works with a webcam, not clearly smooth |
+| Third batch: sharp HUD text, swing help, tuning panel (F3), extra head-tracking smoothing, recording, turning by head | Written | Compiles; tests and simulation only; not run |
 | Wrist device firmware for the XIAO ESP32-C3 | Starting point | Not compiled, no device |
 | Hands, music, 1v1, spectator screen | Not started | |
 
@@ -90,7 +91,10 @@ If a date slips, cut stretch tasks first, then simplify the duel. The Dec 20 fre
 | Everyone runs it on their own laptop and writes down their frame rate | Nov 22 | Not started | Names the weakest laptop and proves the budget. |
 | Midtown as boxes, loaded from one small file | Nov 15 | Done | 6,899 buildings from NYC open data. `tools/city/` rebuilds it. |
 | Window effect: the head-tracking package with an on/off switch (H) and a setup panel (F2) | Nov 15 | Written, not run | The game stays fully playable with it off, and still compiles if the package is removed. See [HEAD-TRACKING](HEAD-TRACKING.md). |
-| Test head tracking with a webcam; measure the frame rate with the tracker running | Nov 29 | Not started | Also decide whether the narrower window view suits swinging. |
+| Extra head-tracking smoothing between tracker reports | Nov 16 | Written, not run | In simulation the view trails the head about 40% less and moves about 3 times more evenly. See [HEAD-TRACKING](HEAD-TRACKING.md). |
+| Compare smoothing on and off with a webcam; record 20 seconds and tune against the real data | Nov 29 | Not started | The simulation assumes the tracker's delay and wobble. |
+| Try turning the view by turning the head | Nov 29 | Not started | Off by default. The old project removed a similar feature. |
+| Measure the frame rate with the tracker running | Nov 29 | Not started | |
 | Make it read as Manhattan: stepped tops for the tallest towers, a few landmark shapes, street markings | Dec 6 | Not started | Only after the race is fun. Each addition is measured against the budget. |
 | Widen the city beyond Midtown | After the booth | Not started | Stretch. One command (`--area all`). |
 
@@ -100,7 +104,8 @@ If a date slips, cut stretch tasks first, then simplify the duel. The Dec 20 fre
 | --- | --- | --- | --- |
 | Basic swing with the mouse: aim, hold to attach, release, reel in, jump, run | Nov 15 | Runs, not tuned | New, simple code that keeps the old project's numbers (gravity, speeds). All tuning is in `SwingSettings.cs`. |
 | Aim help and a reticle that fills when a web would catch | Nov 15 | Runs, not tuned | Tries nearby directions when the aim just misses. |
-| First playtest: list the five worst things about the swing and fix them | Nov 22 | Not started | Likely suspects: starting from the ground, gaining height, turning corners. |
+| Swing help: webs shorten to clear the street, swings slowly gain height, a small boost for letting go on the way up | Nov 16 | Written, not run | A group of crude automatic pilots flies the route as a test. With the plain physics one passed 2 of 10 rings; now 7 of 9 finish, in 3 to 4.5 minutes. |
+| Tune the swing with the F3 sliders and write the good values into `SwingSettings.cs` | Nov 22 | Not started | @SW: the swing and controls need improvement. What exactly feels wrong is not recorded yet. |
 | Outside playtests, then freeze the tuning | Dec 13 | Not started | Tuning that changes after this invalidates route times and the comfort test. |
 | Advanced moves from the old project (wall run, rope wrap, two-hand launch) | Dec 13 | Not started | Stretch. Only if the race is already fun without them. |
 

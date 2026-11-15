@@ -29,6 +29,26 @@ namespace Swing.Game
         bool CaptureFaceReference();
         /// <summary>The command that starts the webcam tracker for this game.</summary>
         string TrackerCommand { get; }
+
+        /// <summary>
+        /// Extra smoothing on top of the package: fills in between tracker reports and makes up for
+        /// their delay. Switch it off to compare with the package on its own.
+        /// </summary>
+        bool Smoothing { get; set; }
+        /// <summary>How fast the tracker is and how old its picture is, for the setup panel.</summary>
+        string Diagnostics { get; }
+
+        /// <summary>Turn the view by turning the head (see HeadTurn). Off unless switched on.</summary>
+        bool TurnWithHead { get; set; }
+        /// <summary>Set if turning the head right turns the view left.</summary>
+        bool FlipHeadTurn { get; set; }
+        /// <summary>How far the head is turned, in degrees, right positive after the flip. 0 when no face is found.</summary>
+        float HeadYawDegrees { get; }
+
+        /// <summary>True while eye positions are being written to a file.</summary>
+        bool Recording { get; }
+        /// <summary>Starts a 20-second recording of eye positions and returns the file's path.</summary>
+        string StartRecording();
     }
 
     public static class HeadTrackingHook
