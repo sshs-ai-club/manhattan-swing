@@ -1,6 +1,6 @@
 # 천년제 부스 To-Do (Dec 29)
 
-Nov 16, 2026 · @SW · fourth revision, after the second run in Unity
+Nov 15, 2026 · @SW · fourth revision, after the second run in Unity
 
 ## Where we are
 
@@ -91,7 +91,7 @@ If a date slips, cut stretch tasks first, then simplify the duel. The Dec 20 fre
 | Everyone runs it on their own laptop and writes down their frame rate | Nov 22 | Not started | Names the weakest laptop and proves the budget. |
 | Midtown as boxes, loaded from one small file | Nov 15 | Done | 6,899 buildings from NYC open data. `tools/city/` rebuilds it. |
 | Window effect: the head-tracking package with an on/off switch (H) and a setup panel (F2) | Nov 15 | Written, not run | The game stays fully playable with it off, and still compiles if the package is removed. See [HEAD-TRACKING](HEAD-TRACKING.md). |
-| Extra head-tracking smoothing between tracker reports | Nov 16 | Written, not run | In simulation the view trails the head about 40% less and moves about 3 times more evenly. See [HEAD-TRACKING](HEAD-TRACKING.md). |
+| Extra head-tracking smoothing between tracker reports | Nov 15 | Written, not run | In simulation the view trails the head about 40% less and moves about 3 times more evenly. See [HEAD-TRACKING](HEAD-TRACKING.md). |
 | Compare smoothing on and off with a webcam; record 20 seconds and tune against the real data | Nov 29 | Not started | The simulation assumes the tracker's delay and wobble. |
 | Try turning the view by turning the head | Nov 29 | Not started | Off by default. The old project removed a similar feature. |
 | Measure the frame rate with the tracker running | Nov 29 | Not started | |
@@ -104,7 +104,7 @@ If a date slips, cut stretch tasks first, then simplify the duel. The Dec 20 fre
 | --- | --- | --- | --- |
 | Basic swing with the mouse: aim, hold to attach, release, reel in, jump, run | Nov 15 | Runs, not tuned | New, simple code that keeps the old project's numbers (gravity, speeds). All tuning is in `SwingSettings.cs`. |
 | Aim help and a reticle that fills when a web would catch | Nov 15 | Runs, not tuned | Tries nearby directions when the aim just misses. |
-| Swing help: webs shorten to clear the street, swings slowly gain height, a small boost for letting go on the way up | Nov 16 | Written, not run | A group of crude automatic pilots flies the route as a test. With the plain physics one passed 2 of 10 rings; now 7 of 9 finish, in 3 to 4.5 minutes. |
+| Swing help: webs shorten to clear the street, swings slowly gain height, a small boost for letting go on the way up | Nov 15 | Written, not run | A group of crude automatic pilots flies the route as a test. With the plain physics one passed 2 of 10 rings; now 7 of 9 finish, in 3 to 4.5 minutes. |
 | Tune the swing with the F3 sliders and write the good values into `SwingSettings.cs` | Nov 22 | Not started | @SW: the swing and controls need improvement. What exactly feels wrong is not recorded yet. |
 | Outside playtests, then freeze the tuning | Dec 13 | Not started | Tuning that changes after this invalidates route times and the comfort test. |
 | Advanced moves from the old project (wall run, rope wrap, two-hand launch) | Dec 13 | Not started | Stretch. Only if the race is already fun without them. |
