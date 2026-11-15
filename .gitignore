@@ -1,0 +1,22 @@
+# Unity (project lives in Game/)
+/Game/[Ll]ibrary/
+/Game/[Tt]emp/
+/Game/[Oo]bj/
+/Game/[Ll]ogs/
+/Game/[Uu]ser[Ss]ettings/
+/Game/[Bb]uild*/
+/Game/*.csproj
+/Game/*.sln
+/Game/.vs/
+
+# Builds and local files
+/Builds/
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+.venv/
