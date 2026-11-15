@@ -59,6 +59,13 @@ namespace Swing.Core
 
         public void Release()
         {
+            if (Attached && !Grounded && Velocity.Y > 0 && Settings.ReleaseBoost > 0)
+            {
+                // A small reward for letting go on the way up, which is the right moment.
+                Velocity *= 1 + Settings.ReleaseBoost;
+                float speed = Velocity.Length();
+                if (speed > Settings.MaxSpeed) Velocity *= Settings.MaxSpeed / speed;
+            }
             Attached = false;
         }
 
@@ -139,6 +146,7 @@ namespace Swing.Core
 
             Vector3 fromAnchor = Position - Anchor;
             float distance = fromAnchor.Length();
+            if (!Grounded && distance >= WebLength - 0.05f) ShortenWhileSwinging(h);
             if (distance <= WebLength || distance < 1e-5f) return;   // slack: the web does nothing
 
             Vector3 outward = fromAnchor / distance;
@@ -147,6 +155,19 @@ namespace Swing.Core
             float outwardSpeed = Vector3.Dot(Velocity, outward);
             float allowed = reel ? -Settings.ReelSpeed : 0;
             if (outwardSpeed > allowed) Velocity -= outward * (outwardSpeed - allowed);
+        }
+
+        /// <summary>Help that only applies while the web is tight and the body is in the air.</summary>
+        private void ShortenWhileSwinging(float h)
+        {
+            float shorten = Settings.SwingPullSpeed * h;
+
+            // Keep the bottom of the swing off the street. Roofs are not considered.
+            float longestSafe = Anchor.Y - Settings.GroundClearance;
+            if (WebLength > longestSafe)
+                shorten = Math.Max(shorten, Math.Min(WebLength - longestSafe, Settings.ClearanceReelSpeed * h));
+
+            WebLength = Math.Max(Settings.MinWebLength, WebLength - shorten);
         }
 
         private void Collide()

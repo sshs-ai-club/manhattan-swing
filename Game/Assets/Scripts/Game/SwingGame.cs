@@ -90,8 +90,14 @@ namespace Swing.Game
             if (input.SetupPressed)
             {
                 hud.SetupOpen = !hud.SetupOpen;
-                if (hud.SetupOpen) Cursor.lockState = CursorLockMode.None;
+                hud.TuningOpen = false;
             }
+            if (input.TuningPressed)
+            {
+                hud.TuningOpen = !hud.TuningOpen;
+                hud.SetupOpen = false;
+            }
+            if (hud.SetupOpen || hud.TuningOpen) Cursor.lockState = CursorLockMode.None;
             if (input.CancelPressed) Cursor.lockState = CursorLockMode.None;
 
             if (tracking != null && input.TrackingPressed) tracking.On = !tracking.On;
@@ -106,7 +112,7 @@ namespace Swing.Game
                 case RaceState.Countdown:
                 case RaceState.Running:
                     if (input.RestartPressed) StartRun();
-                    else if (input.ClickPressed && !hud.SetupOpen) Cursor.lockState = CursorLockMode.Locked;
+                    else if (input.ClickPressed && !hud.SetupOpen && !hud.TuningOpen) Cursor.lockState = CursorLockMode.Locked;
                     break;
                 case RaceState.Finished:
                     if (input.RestartPressed) StartRun();
@@ -161,7 +167,7 @@ namespace Swing.Game
         /// <summary>Puts the player back on the start roof and begins the countdown.</summary>
         private void StartRun()
         {
-            hud.SetupOpen = false;
+            hud.SetupOpen = hud.TuningOpen = false;
             Cursor.lockState = CursorLockMode.Locked;
             player.PlaceAt(race.Route.Start, race.Route.StartYawDegrees);
             race.StartCountdown();

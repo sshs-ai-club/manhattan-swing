@@ -8,7 +8,15 @@ namespace Swing.Core.Tests
     {
         private const float Frame = 1f / 60f;
 
+        /// <summary>Plain physics: every kind of swing help switched off.</summary>
         private static SwingBody BodyInEmptyWorld()
+        {
+            var settings = new SwingSettings { SwingPullSpeed = 0, GroundClearance = -1000, ReleaseBoost = 0 };
+            return new SwingBody(new CityCollision(new CityData()), settings);
+        }
+
+        /// <summary>The settings the game really uses.</summary>
+        private static SwingBody BodyWithHelp()
         {
             return new SwingBody(new CityCollision(new CityData()));
         }
@@ -93,6 +101,57 @@ namespace Swing.Core.Tests
             body.Attach(new Vector3(0, 60, 40));
             for (int i = 0; i < 60; i++) body.Step(Frame, new SwingInput());
             Assert.Greater(body.Position.Y, 5f);
+        }
+
+        [Test]
+        public void ALongWebIsShortenedSoTheSwingClearsTheStreet()
+        {
+            SwingBody body = BodyWithHelp();
+            body.Teleport(new Vector3(0, 40, 0));
+            body.Velocity = new Vector3(0, 0, 10);
+            Assert.IsTrue(body.Attach(new Vector3(0, 60, 80)));   // an 82 m web from 60 m up: it would hit the ground
+            float lowest = float.MaxValue;
+            for (int i = 0; i < 400 && !body.Grounded; i++)
+            {
+                body.Step(Frame, new SwingInput());
+                lowest = Math.Min(lowest, body.Position.Y);
+            }
+            Assert.IsFalse(body.Grounded, "the swing should not touch the street");
+            Assert.Greater(lowest, 3f);
+        }
+
+        [Test]
+        public void SwingingSlowlyGainsHeight()
+        {
+            SwingBody body = BodyWithHelp();
+            body.Teleport(new Vector3(0, 80, 0));
+            body.Attach(new Vector3(0, 120, 30));
+            float firstPeak = 0, laterPeak = 0;
+            for (int i = 0; i < 900; i++)
+            {
+                body.Step(Frame, new SwingInput());
+                if (i < 300) firstPeak = Math.Max(firstPeak, body.Position.Y);
+                else laterPeak = Math.Max(laterPeak, body.Position.Y);
+            }
+            Assert.Greater(laterPeak, firstPeak + 1f);
+        }
+
+        [Test]
+        public void LettingGoOnTheWayUpAddsALittleSpeedButNotOnTheWayDown()
+        {
+            SwingBody body = BodyWithHelp();
+            body.Teleport(new Vector3(0, 100, 0));
+            body.Attach(new Vector3(0, 150, 0));
+            body.Velocity = new Vector3(0, 10, 20);
+            float before = body.Velocity.Length();
+            body.Release();
+            Assert.AreEqual(before * 1.08f, body.Velocity.Length(), 0.01f);
+
+            body.Attach(new Vector3(0, 150, 0));
+            body.Velocity = new Vector3(0, -10, 20);
+            before = body.Velocity.Length();
+            body.Release();
+            Assert.AreEqual(before, body.Velocity.Length(), 0.001f);
         }
 
         [Test]

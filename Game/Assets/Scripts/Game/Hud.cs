@@ -34,10 +34,13 @@ namespace Swing.Game
         public bool StartRequested;
         /// <summary>The setup panel (F2) for booth staff.</summary>
         public bool SetupOpen;
+        /// <summary>The tuning panel (F3): sliders for how the swing feels.</summary>
+        public bool TuningOpen;
         /// <summary>Enter is ignored until this time, so the key that ended one run cannot start the next.</summary>
         public float IgnoreEnterUntil;
 
         private GUIStyle small, medium, large, huge, field, panelText, panelButton, panelField;
+        private float scale = 1, stylesMadeForScale;
         private string message = "";
         private float messageUntil;
         private string widthText, heightText, distanceText;
@@ -52,9 +55,10 @@ namespace Swing.Game
 
         public void Draw(HudInfo info)
         {
-            // Lay everything out as if the screen were 1080 pixels tall, then scale to the real size.
-            float scale = Screen.height / 1080f;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
+            // Positions and sizes below are written as if the screen were 1080 pixels tall. They are
+            // multiplied by "scale" when drawn, and fonts are made at their real pixel size, so text
+            // stays sharp on any screen. (Stretching a finished 1080p picture made it blurry.)
+            scale = Screen.height / 1080f;
             float width = Screen.width / scale;
             const float height = 1080f;
             MakeStyles();
@@ -82,7 +86,7 @@ namespace Swing.Game
                     Text(new Rect(0, below.y, width, 50), "Type your name and press Enter", medium, TextAnchor.UpperCenter);
                     DrawNameField(new Rect(width / 2 - 230, below.y + 60, 460, 70));
                     Text(new Rect(0, below.y + 160, width, 200),
-                        "Hold left mouse: web      Right mouse / E: reel in      Space: jump      W A S D: move\nR: restart      Esc: free the mouse      F2: setup",
+                        "Hold left mouse: web      Right mouse / E: reel in      Space: jump      W A S D: move\nR: restart      Esc: free the mouse      F2: setup      F3: tuning",
                         small, TextAnchor.UpperCenter);
                     DrawLeaderboard(info, new Rect(width - 470, 150, 440, 600), 0);
                     break;
@@ -106,8 +110,9 @@ namespace Swing.Game
                 Text(new Rect(0, height * 0.72f, width, 60), message, medium, TextAnchor.MiddleCenter);
 
             if (race.State == RaceState.Running) DrawRingMarker(info, width, height);
-            if (race.State != RaceState.Waiting && !SetupOpen) DrawReticle(info.Input.Aim, info.Player.CanAttach, width, height);
+            if (race.State != RaceState.Waiting && !SetupOpen && !TuningOpen) DrawReticle(info.Input.Aim, info.Player.CanAttach, width, height);
             if (SetupOpen) DrawSetup(info);
+            if (TuningOpen) DrawTuning(info);
         }
 
         public static string FormatTime(float seconds)
@@ -136,7 +141,7 @@ namespace Swing.Game
             }
 
             GUI.SetNextControlName("name");
-            Name = GUI.TextField(area, Name, Leaderboard.MaxNameLength, field);
+            Name = GUI.TextField(Scaled(area), Name, Leaderboard.MaxNameLength, field);
             if (!SetupOpen && GUI.GetNameOfFocusedControl() != "name") GUI.FocusControl("name");
         }
 
@@ -162,7 +167,7 @@ namespace Swing.Game
         // --- During a run ------------------------------------------------------------------
 
         /// <summary>Four marks around the aim point; a filled dot when a web would catch.</summary>
-        private static void DrawReticle(Vector2 aim, bool canAttach, float width, float height)
+        private void DrawReticle(Vector2 aim, bool canAttach, float width, float height)
         {
             float x = aim.x * width, y = (1 - aim.y) * height;
             Color colour = canAttach ? new Color(1f, 0.9f, 0.2f) : new Color(1f, 1f, 1f, 0.6f);
@@ -193,9 +198,9 @@ namespace Swing.Game
         {
             var area = new Rect(24, 70, 640, 800);
             Fill(area, new Color(0, 0, 0, 0.8f));
-            GUILayout.BeginArea(new Rect(area.x + 20, area.y + 16, area.width - 40, area.height - 32));
+            GUILayout.BeginArea(Scaled(new Rect(area.x + 20, area.y + 16, area.width - 40, area.height - 32)));
             GUILayout.Label("SETUP   (F2 closes)", panelText);
-            GUILayout.Space(12);
+            GUILayout.Space(12 * scale);
 
             IHeadTracking tracking = info.Tracking;
             if (tracking == null)
@@ -206,7 +211,7 @@ namespace Swing.Game
             {
                 if (GUILayout.Button("Head tracking: " + (tracking.On ? "ON" : "OFF"), panelButton)) tracking.On = !tracking.On;
                 GUILayout.Label(tracking.Status, panelText);
-                GUILayout.Space(8);
+                GUILayout.Space(8 * scale);
 
                 if (widthText == null)
                 {
@@ -229,13 +234,13 @@ namespace Swing.Game
                     }
                     else Flash("Sizes must be numbers between 10 and 300");
                 }
-                GUILayout.Space(8);
+                GUILayout.Space(8 * scale);
                 if (GUILayout.Button("Capture face (sit normally, look at the screen)", panelButton))
                     Flash(tracking.CaptureFaceReference() ? "Face captured" : "No face found: is the tracker running?");
                 GUILayout.Label("Start the webcam tracker with:\n" + tracking.TrackerCommand, panelText);
             }
 
-            GUILayout.Space(20);
+            GUILayout.Space(20 * scale);
             GUILayout.Label("Leaderboard: " + info.Scores.Board.Count + " runs saved", panelText);
             bool confirming = Time.unscaledTime < confirmResetUntil;
             if (GUILayout.Button(confirming ? "Click again to empty the leaderboard" : "Reset leaderboard", panelButton))
@@ -251,13 +256,84 @@ namespace Swing.Game
             GUILayout.EndArea();
         }
 
+        // --- Tuning panel (F3) -------------------------------------------------------------
+
+        /// <summary>
+        /// Sliders for the numbers in SwingSettings.cs, so the swing can be tuned while playing.
+        /// Changes last until the game is closed. When it feels right, press "Write values to the
+        /// Console" and copy them into SwingSettings.cs so everyone gets them.
+        /// </summary>
+        private void DrawTuning(HudInfo info)
+        {
+            SwingSettings s = info.Player.Body.Settings;
+            var area = new Rect(24, 70, 700, 900);
+            Fill(area, new Color(0, 0, 0, 0.8f));
+            GUILayout.BeginArea(Scaled(new Rect(area.x + 20, area.y + 16, area.width - 40, area.height - 32)));
+            GUILayout.Label("TUNING   (F3 closes, changes last until you quit)", panelText);
+            GUILayout.Space(10 * scale);
+
+            float before = info.Input.MouseDegreesPerPixel;
+            info.Input.MouseDegreesPerPixel = Slider("Mouse sensitivity", before, 0.02f, 0.4f, "0.00");
+            if (info.Input.MouseDegreesPerPixel != before) info.Input.SaveSensitivity();
+            GUILayout.Space(10 * scale);
+
+            s.Gravity = Slider("Gravity", s.Gravity, 8, 40, "0");
+            s.SwingPullSpeed = Slider("Swing pull (height gained per swing)", s.SwingPullSpeed, 0, 10, "0.0");
+            s.ReleaseBoost = Slider("Release boost", s.ReleaseBoost, 0, 0.3f, "0.00");
+            s.SwingBoostSpeed = Slider("Forward key speeds up to", s.SwingBoostSpeed, 10, 80, "0");
+            s.SwingBoostAcceleration = Slider("Forward key strength", s.SwingBoostAcceleration, 0, 40, "0");
+            s.AirControl = Slider("Air steering", s.AirControl, 0, 40, "0");
+            s.GroundClearance = Slider("Keep swings above street by", s.GroundClearance, 0, 20, "0");
+            s.ReelSpeed = Slider("Reel speed", s.ReelSpeed, 8, 60, "0");
+            s.JumpSpeed = Slider("Jump", s.JumpSpeed, 5, 35, "0");
+            s.MaxWebLength = Slider("Longest web", s.MaxWebLength, 60, 300, "0");
+            s.MaxSpeed = Slider("Top speed", s.MaxSpeed, 30, 120, "0");
+            s.AutoReelOnGround = GUILayout.Toggle(s.AutoReelOnGround, "  Web lifts you off the ground by itself", panelText);
+
+            GUILayout.Space(12 * scale);
+            if (GUILayout.Button("Back to the built-in values", panelButton))
+            {
+                var d = new SwingSettings();
+                s.Gravity = d.Gravity; s.SwingPullSpeed = d.SwingPullSpeed; s.ReleaseBoost = d.ReleaseBoost;
+                s.SwingBoostSpeed = d.SwingBoostSpeed; s.SwingBoostAcceleration = d.SwingBoostAcceleration;
+                s.AirControl = d.AirControl; s.GroundClearance = d.GroundClearance; s.ReelSpeed = d.ReelSpeed;
+                s.JumpSpeed = d.JumpSpeed; s.MaxWebLength = d.MaxWebLength; s.MaxSpeed = d.MaxSpeed;
+                s.AutoReelOnGround = d.AutoReelOnGround;
+            }
+            if (GUILayout.Button("Write values to the Console", panelButton))
+            {
+                Debug.Log(string.Format(CultureInfo.InvariantCulture,
+                    "Swing tuning: Gravity {0}, SwingPullSpeed {1}, ReleaseBoost {2}, SwingBoostSpeed {3}, SwingBoostAcceleration {4}, " +
+                    "AirControl {5}, GroundClearance {6}, ReelSpeed {7}, JumpSpeed {8}, MaxWebLength {9}, MaxSpeed {10}, AutoReelOnGround {11}, mouse {12}",
+                    s.Gravity, s.SwingPullSpeed, s.ReleaseBoost, s.SwingBoostSpeed, s.SwingBoostAcceleration, s.AirControl,
+                    s.GroundClearance, s.ReelSpeed, s.JumpSpeed, s.MaxWebLength, s.MaxSpeed, s.AutoReelOnGround, info.Input.MouseDegreesPerPixel));
+                Flash("Values written to the Console");
+            }
+            GUILayout.EndArea();
+        }
+
+        private float Slider(string label, float value, float min, float max, string format)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(label, panelText, GUILayout.Width(330 * scale));
+            value = GUILayout.HorizontalSlider(value, min, max, GUILayout.Width(230 * scale), GUILayout.Height(28 * scale));
+            GUILayout.Label(value.ToString(format, CultureInfo.InvariantCulture), panelText, GUILayout.Width(70 * scale));
+            GUILayout.EndHorizontal();
+            return value;
+        }
+
         private string LabelledField(string label, string value)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(label, panelText, GUILayout.Width(260));
-            value = GUILayout.TextField(value, 6, panelField, GUILayout.Width(140));
+            GUILayout.Label(label, panelText, GUILayout.Width(260 * scale));
+            value = GUILayout.TextField(value, 6, panelField, GUILayout.Width(140 * scale));
             GUILayout.EndHorizontal();
             return value;
+        }
+
+        private int FontSize(float sizeAt1080)
+        {
+            return Mathf.Max(8, Mathf.RoundToInt(sizeAt1080 * scale));
         }
 
         private static string Number(float value)
@@ -272,35 +348,42 @@ namespace Swing.Game
 
         // --- Drawing helpers ---------------------------------------------------------------
 
-        private static void Fill(Rect area, Color colour)
+        /// <summary>Turns a rectangle written for a 1080-pixel-tall screen into real pixels.</summary>
+        private Rect Scaled(Rect area)
+        {
+            return new Rect(area.x * scale, area.y * scale, area.width * scale, area.height * scale);
+        }
+
+        private void Fill(Rect area, Color colour)
         {
             Color before = GUI.color;
             GUI.color = colour;
-            GUI.DrawTexture(area, Texture2D.whiteTexture);
+            GUI.DrawTexture(Scaled(area), Texture2D.whiteTexture);
             GUI.color = before;
         }
 
         /// <summary>White text with a dark copy behind it so it reads over any background.</summary>
-        private static void Text(Rect area, string text, GUIStyle style, TextAnchor anchor)
+        private void Text(Rect area, string text, GUIStyle style, TextAnchor anchor)
         {
             style.alignment = anchor;
             style.normal.textColor = new Color(0, 0, 0, 0.75f);
-            GUI.Label(new Rect(area.x + 2, area.y + 2, area.width, area.height), text, style);
+            GUI.Label(Scaled(new Rect(area.x + 2, area.y + 2, area.width, area.height)), text, style);
             style.normal.textColor = Color.white;
-            GUI.Label(area, text, style);
+            GUI.Label(Scaled(area), text, style);
         }
 
         private void MakeStyles()
         {
-            if (small != null) return;
-            small = new GUIStyle(GUI.skin.label) { fontSize = 24 };
-            medium = new GUIStyle(GUI.skin.label) { fontSize = 32 };
-            large = new GUIStyle(GUI.skin.label) { fontSize = 56, fontStyle = FontStyle.Bold };
-            huge = new GUIStyle(GUI.skin.label) { fontSize = 120, fontStyle = FontStyle.Bold };
-            field = new GUIStyle(GUI.skin.textField) { fontSize = 40, alignment = TextAnchor.MiddleCenter };
-            panelText = new GUIStyle(GUI.skin.label) { fontSize = 22, wordWrap = true };
-            panelButton = new GUIStyle(GUI.skin.button) { fontSize = 22 };
-            panelField = new GUIStyle(GUI.skin.textField) { fontSize = 22 };
+            if (small != null && Mathf.Approximately(stylesMadeForScale, scale)) return;
+            stylesMadeForScale = scale;
+            small = new GUIStyle(GUI.skin.label) { fontSize = FontSize(24) };
+            medium = new GUIStyle(GUI.skin.label) { fontSize = FontSize(32) };
+            large = new GUIStyle(GUI.skin.label) { fontSize = FontSize(56), fontStyle = FontStyle.Bold };
+            huge = new GUIStyle(GUI.skin.label) { fontSize = FontSize(120), fontStyle = FontStyle.Bold };
+            field = new GUIStyle(GUI.skin.textField) { fontSize = FontSize(40), alignment = TextAnchor.MiddleCenter };
+            panelText = new GUIStyle(GUI.skin.label) { fontSize = FontSize(22), wordWrap = true };
+            panelButton = new GUIStyle(GUI.skin.button) { fontSize = FontSize(22) };
+            panelField = new GUIStyle(GUI.skin.textField) { fontSize = FontSize(22) };
         }
     }
 }

@@ -12,7 +12,16 @@ namespace Swing.Game
     /// </summary>
     public sealed class PlayerInput
     {
-        public float MouseDegreesPerPixel = 0.12f;
+        private const string SensitivityKey = "mouseDegreesPerPixel";
+
+        /// <summary>Mouse sensitivity. Set in the tuning panel (F3) and remembered on this laptop.</summary>
+        public float MouseDegreesPerPixel = PlayerPrefs.GetFloat(SensitivityKey, 0.12f);
+
+        public void SaveSensitivity()
+        {
+            PlayerPrefs.SetFloat(SensitivityKey, MouseDegreesPerPixel);
+        }
+
         public readonly WristDevice Wrist = new WristDevice();
 
         /// <summary>How far to turn the view this frame, in degrees (x = right, y = up).</summary>
@@ -32,6 +41,7 @@ namespace Swing.Game
         public bool TrackingPressed;        // H: head tracking on/off
         public bool CaptureFacePressed;     // K: head tracking face reference
         public bool SetupPressed;           // F2: setup panel
+        public bool TuningPressed;          // F3: tuning panel
         public bool ResetBoardPressed;      // Ctrl + Shift + Delete
         /// <summary>P, a developer key: write the current position to the log as a route line.</summary>
         public bool MarkPressed;
@@ -50,7 +60,7 @@ namespace Swing.Game
             Move = Vector2.zero;
             Hold = Reel = Jump = false;
             RestartPressed = EnterPressed = ClickPressed = CancelPressed = RecentrePressed = false;
-            TrackingPressed = CaptureFacePressed = SetupPressed = ResetBoardPressed = MarkPressed = false;
+            TrackingPressed = CaptureFacePressed = SetupPressed = TuningPressed = ResetBoardPressed = MarkPressed = false;
 
             if (mouse != null)
             {
@@ -63,6 +73,7 @@ namespace Swing.Game
             {
                 CancelPressed = keyboard.escapeKey.wasPressedThisFrame;
                 SetupPressed = keyboard.f2Key.wasPressedThisFrame;
+                TuningPressed = keyboard.f3Key.wasPressedThisFrame;
                 EnterPressed = keyboard.enterKey.wasPressedThisFrame;
                 ResetBoardPressed = keyboard.ctrlKey.isPressed && keyboard.shiftKey.isPressed &&
                                     keyboard.deleteKey.wasPressedThisFrame;

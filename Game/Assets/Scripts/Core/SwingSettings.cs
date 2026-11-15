@@ -31,6 +31,19 @@ namespace Swing.Core
         /// This lets a one-button device start a swing from the ground.
         /// </summary>
         public bool AutoReelOnGround = true;
+        /// <summary>
+        /// A web that is too long would swing you into the street. While you swing, the web shortens
+        /// by itself until the lowest point of the swing is this far above the ground.
+        /// </summary>
+        public float GroundClearance = 6f;
+        public float ClearanceReelSpeed = 30f;   // m/s the web may shorten to keep that clearance
+        /// <summary>
+        /// The web also shortens slowly all the time you swing (m/s). This adds a little height and
+        /// speed on every swing, the way pumping a playground swing does. 0 turns it off.
+        /// </summary>
+        public float SwingPullSpeed = 3f;
+        /// <summary>Letting go while rising adds this share of your speed (0.08 = 8%). 0 turns it off.</summary>
+        public float ReleaseBoost = 0.08f;
         /// <summary>Holding forward while swinging speeds the swing up until this speed.</summary>
         public float SwingBoostSpeed = 34f;
         public float SwingBoostAcceleration = 12f;

@@ -50,6 +50,32 @@ namespace Swing.Core.Tests
             Assert.Greater(body.Position.Y, 30f, "the start should be on a roof, not the street");
         }
 
+        /// <summary>
+        /// A rough check that the route can be finished. Several crude pilots fly it, each letting
+        /// go of the web at a different point in the swing. One pilot's flight depends on tiny
+        /// details, so the test looks at the group: most must finish. If this fails after a tuning
+        /// or route change, the change has probably made the game harder for beginners; play the
+        /// route before loosening the numbers.
+        /// </summary>
+        [Test]
+        public void MostCrudeAutomaticPilotsFinishTheMidtownRoute()
+        {
+            var collision = new CityCollision(City());
+            Route route = MidtownRoute();
+            int pilots = 0, finished = 0;
+            string report = "";
+            for (float release = 25; release <= 49; release += 3)
+            {
+                TestPilot pilot = TestPilot.Fly(collision, route, new SwingSettings(), 480, release);
+                pilots++;
+                if (pilot.Finished) finished++;
+                report += string.Format("\n  release at {0} degrees: {1} rings, {2:0} s, ended at {3:0}, {4:0}, {5:0}", release, pilot.RingsPassed, pilot.Seconds,
+                    pilot.LastPosition.X, pilot.LastPosition.Y, pilot.LastPosition.Z);
+            }
+            Assert.GreaterOrEqual(finished, pilots * 2 / 3, "Too few pilots finished within 8 minutes:" + report);
+            System.Console.WriteLine("Pilots:" + report);
+        }
+
         [Test]
         public void AWebCanBeFiredFromTheStartTowardsTheFirstRing()
         {
