@@ -1,177 +1,193 @@
 # 천년제 부스 To-Do (Dec 29)
 
-Nov 15, 2026 · @SW · replaces the Nov 11 plan written for the old repository
+Nov 15, 2026 · @SW · second revision, after the team's answers
 
-## Why we restarted
+## Where we are
 
-The old project ([manhattan-headtracked-viewer](https://github.com/sshs-ai-club/manhattan-headtracked-viewer)) built a heavy city before it had a game, so almost nobody on the team could run it at home. This repository starts again in the opposite order: a game that runs on every team laptop first, then the city's look.
+A first playable version is in the repository but **nobody has opened it in Unity yet**. It was written without a Unity Editor, so the first job is to open it, press Play and fix whatever does not work.
 
-| | Old repository | This repository |
+| Part | State | Checked how |
 | --- | --- | --- |
-| City | All of Manhattan: 10,038 streamed tiles, 68.7 million triangles, a multi-GB source download and a bake step | One Midtown district made of simple boxes, built when the game starts from one small data file |
-| Target machine | RTX 4070 Laptop, 8 GB VRAM | The weakest laptop on the team |
-| Order of work | Engine and city first; rings, timer and score never started | Swing, rings and timer first; looks last |
-| Wrist device | Arduino + HC-05, then ESP32 over Wi-Fi UDP | ESP32 over Bluetooth |
-| Getting started | Git LFS, GitHub CLI, Python, Unity, setup, bake, build | Clone, open in Unity, press Play |
+| Midtown as 6,899 box buildings in a 170 KB file | Written | Drawn as a map and inspected |
+| Game rules: collision, swing, aim help, route, timed ring race | Written | 27 automated tests pass outside Unity |
+| Draft route: 10 rings, 2.8 km, 6th Avenue → 57th Street → Park Avenue | Written | Every ring is in open air; never played |
+| Unity side: city drawing, first-person view, mouse and gamepad input, rings, HUD | Written | Compiles against Unity's libraries; never run |
+| Shaders, scene and project settings | Written | Not checked at all |
+| Wrist device firmware for the XIAO ESP32-C3 | Starting point | Not compiled, no device |
+| Head tracking, sound, hands, leaderboard, booth flow, 1v1, spectator screen | Not started | |
 
-The goal has not changed: a two-part booth on **Dec 29, 09:00 to 12:00**. 1부 is a ring race for one player, 2부 is 1v1 on two laptops. The game is a head-tracked window into Manhattan where you swing on webs, aimed with a wrist device.
+The goal has not changed: a two-part booth on **Dec 29, 09:00 to 12:00**. 1부 (09:00 to 10:30) is a ring race for one player. 2부 (10:30 to 12:00) is a 1v1 duel on two laptops. The game is a head-tracked window into Manhattan where you swing on webs, aimed with a wrist device.
 
-Several choices in this plan are assumptions that the team has not confirmed. They are listed with the open questions in [DECISIONS](DECISIONS.md), and marked here as (A1), (A2) and so on.
+Choices the team has confirmed, choices still assumed, and open questions are in [DECISIONS](DECISIONS.md).
 
 ## Rules for the restart
 
-These four rules exist so the old problem cannot come back.
+The old project built a heavy city before it had a game, and almost nobody could run it at home. These rules stop that happening again.
 
-1. **Every laptop runs it.** A change that breaks the weight budget below does not merge, however good it looks.
-2. **Game before graphics.** Nothing is added to the city's look until a player can finish a timed ring race on grey boxes.
-3. **`main` is playable every Sunday.** Each milestone ends with a build that someone outside the team can play.
-4. **The mouse always works.** Head tracking and the wrist device are added on top and can each be turned off, so nobody is blocked by missing hardware.
+1. **Every laptop runs it.** A change that breaks the weight budget does not merge.
+2. **Game before graphics.** The city stays as boxes until the race is fun.
+3. **`main` is playable every Sunday.**
+4. **The mouse always works.** Head tracking and the wrist device are extras that can each be turned off.
 
 ### Weight budget
 
-The limits are proposals until the weakest laptop is named (Q2 in [DECISIONS](DECISIONS.md)).
-
-| What | Limit |
-| --- | --- |
-| Frame rate | 60 fps at 1920×1080 on the weakest team laptop, with head tracking on |
-| Triangles on screen | Under 300,000 |
-| From clone to playing | Under 10 minutes, with nothing to download except Unity itself |
-| Repository size | Under 200 MB |
-| Start-up | Playable within 10 seconds of launching |
-
-## What we take from the old repository
-
-The old repository stays as a read-only archive. Code is ported one piece at a time when a task needs it, never copied as a whole.
-
-| Piece | Decision | Reason |
+| What | Limit | Now |
 | --- | --- | --- |
-| [head-tracked-display](https://github.com/lollipop190000/head-tracked-display) package and its webcam tracker | Keep, pinned to one commit | It is a separate, small package and already works |
-| Swing physics (`SwingPhysics`, about 640 lines of core code) | Port the basics: attach, swing, release, reel, jump | It is plain code that does not depend on the old city |
-| Wall run, rope wrap, two-hand launch, air-chain assist | Leave behind; port later only as stretch | They took most of the old effort and the race does not need them |
-| Wrist aim maths (angles to a ray from the tracked eye through the screen) | Port | Still correct whichever way the device connects |
-| First-person hands and wind sound | Port if they fit the budget | Saves the Look and sound tasks some work |
-| City streaming, bake, Addressables, source packs, benchmark suite, ML-Agents lab, second Unity profile | Leave behind | This is the weight |
-| Team rules (branches, pull requests, an issue as the lock for AI agents) | Keep in short form in [AGENTS.md](../AGENTS.md) | They worked |
+| Frame rate | 60 fps at 1920×1080 on the weakest team laptop, head tracking on | Not measured |
+| Triangles in the whole city | Under 300,000 | About 69,000 |
+| From clone to playing | Under 10 minutes, nothing to download except Unity | No downloads, no bake, no build step |
+| Repository size | Under 200 MB | Under 1 MB |
+| Start-up | Playable within 10 seconds | Not measured |
+
+The weakest laptop has not been named, so the frame-rate target is checked on whichever laptop turns out slowest in the first week.
+
+### Why the city is small on purpose
+
+The whole island would be the ideal, and the same tool can already produce it (44,273 boxes, 1.1 MB). It is left out for now because Midtown is enough to race in, and a smaller city is quicker to load, test and tune. Widening the area later is one command and no code change.
+
+## Where the team takes over
+
+**Now.** Everything that could be written and tested without Unity is done. The next steps need a person at a laptop: seeing the city, feeling the swing, holding the device. From here the work splits into pieces that touch different files, so several people and their AI agents can work at once.
+
+| Piece | Files it owns | First step |
+| --- | --- | --- |
+| First run and swing feel | `Scripts/Core/SwingSettings.cs`, `SwingBody.cs`, `Scripts/Game/Player.cs` | Open the project, press Play, list what is broken |
+| Head tracking | a new `Scripts/Game/HeadTracking.cs`, `Packages/manifest.json` | Add the head-tracked-display package with an on/off switch |
+| Wrist device | `hardware/`, `Scripts/Game/WristDevice.cs` | Flash one board and see it in Windows as a controller |
+| Race flow and leaderboard | `Scripts/Core/Race.cs`, `Scripts/Game/Hud.cs`, `SwingGame.cs` | Name entry and a leaderboard file |
+| Routes | `Resources/route_*.txt` | Play the draft route and move the rings |
+| 1v1 | a new `Scripts/Net/` folder | Send one laptop's position to the other |
+| Look and sound | `Scripts/Game/CityView.cs`, `Resources/Shaders/`, a new `Audio/` folder | Web and ring sounds |
+| Booth | no code | Webcams, room, equipment |
+
+Owners are not assigned yet. That is deliberately left until the first run works.
 
 ## Milestones
 
-Dates stay on the old weekly rhythm. The restart moves the ring route back one week and puts a playable greybox first.
-
 | | Date | Milestone | Done when |
 | --- | --- | --- | --- |
-| M0 | Tue Nov 17 | **Questions answered** | The open questions in [DECISIONS](DECISIONS.md) have answers, and each task below has an owner and a GitHub issue |
-| M1 | Sun Nov 22 | **Greybox swing on every laptop** | Everyone has swung between grey boxes with the mouse at 60 fps on their own laptop; an ESP32 shows up on a laptop over Bluetooth |
-| M2 | Sun Nov 29 | **The race is a game** | 10 rings, timer, finish and restart; the window effect is on; the wrist device holds and releases the web, with mouse fallback |
-| M3 | Sun Dec 6 | **Booth flow and two laptops** | Name to result in one 4-minute slot, leaderboard, two laptops see each other, hands and sounds in, the city reads as Manhattan |
-| M4 | Sun Dec 13 | **Feature complete** | Match rules, 3 devices, spectator screen, 60 fps on the booth laptops. 1v1 go or no-go on **Dec 15** |
-| M5 | Sun Dec 20 | **Code freeze** | Booth release on all three laptops, comfort playtest done. Only crash fixes merge after this |
+| M1 | Sun Nov 22 | **It runs everywhere** | The project opens and plays on every laptop; frame rate written down for each; one ESP32 shows up in Windows as a controller |
+| M2 | Sun Nov 29 | **The race is fun** | Swing tuned from playtests, route adjusted, window effect on, the wrist device aims and holds the web, basic sounds |
+| M3 | Sun Dec 6 | **Booth flow and two laptops** | Name to result in one 4-minute slot, leaderboard, two laptops see each other, hands in |
+| M4 | Sun Dec 13 | **Feature complete** | Duel rules, 3 devices, spectator screen, 60 fps on the booth laptops |
+| | Tue Dec 15 | **Duel check** | Two outside players finish a duel without help. If not, the rules are cut down, not the date |
+| M5 | Sun Dec 20 | **Code freeze** | Booth release on all three laptops, comfort playtest done. Only crash fixes after this |
 | M6 | Tue Dec 29 | **Booth day** | Rehearsal Dec 22 to 23, day-of checklist Dec 27, booth 09:00 to 12:00 |
 
-If a date slips, cut stretch tasks first, then the full duel. The Dec 20 freeze does not move.
+If a date slips, cut stretch tasks first, then simplify the duel. The Dec 20 freeze does not move.
 
 ## Development tasks
-
-33 tasks in seven areas. The ones due Nov 22 unblock everything else. Owners are not listed yet; they come from the answer to Q10.
 
 ### Foundation and city
 
 | Task | Due | Status | Why and details |
 | --- | --- | --- | --- |
-| Unity project that opens and plays with no extra downloads, plus a one-page quickstart | Nov 22 | Not started | Same Unity version as before (A1). Everyone must be able to press Play by M1. |
-| Greybox district: Manhattan-sized blocks of boxes with colliders, built at start-up from one small data file | Nov 22 | Not started | Week 1 uses a generated grid (blocks about 80 m × 270 m, random heights). One scene, plain metre coordinates, no streaming (A2, A4). |
-| Frame-rate readout in the game, and a check on the weakest laptop every Sunday | Nov 22, then weekly | Not started | This is how the weight budget is enforced. Write the number in the pull request. |
-| Window effect: add the head-tracking package and webcam tracker, with an on/off switch | Nov 29 | Not started | The game stays fully playable with tracking off, so people without a webcam can still work (A5). |
-| Make it Manhattan: real Midtown street layout and building heights, 5 to 8 landmark shapes, sky and fog, one shared window material | Dec 6 | Not started | Swaps the data file, not the code. Box buildings with a good skyline read as Manhattan and cost almost nothing. |
+| Open the project in Unity 6000.3.22f1, press Play, fix what is broken, commit the files Unity generates | Nov 18 | Not started | Nothing has run in Unity yet. See [QUICKSTART](QUICKSTART.md). This blocks everything else. |
+| Everyone runs it on their own laptop and writes down their frame rate | Nov 22 | Not started | Names the weakest laptop and proves the budget. |
+| Midtown as boxes, loaded from one small file | Nov 15 | Written, not run | 6,899 buildings from NYC open data. `tools/city/` rebuilds it. |
+| Window effect: add the head-tracking package and webcam tracker, with an on/off switch | Nov 29 | Not started | Reuses the old project's package. The game must stay fully playable with it off. Measure the frame rate with the tracker running. |
+| Make it read as Manhattan: stepped tops for the tallest towers, a few landmark shapes, street markings | Dec 6 | Not started | Only after the race is fun. Each addition is measured against the budget. |
+| Widen the city beyond Midtown | After the booth | Not started | Stretch. One command (`--area all`). |
 
 ### Swing
 
 | Task | Due | Status | Why and details |
 | --- | --- | --- | --- |
-| Basic swing with the mouse: aim, hold to attach, release to let go, reel in, jump, land | Nov 22 | Not started | Ported from the old `SwingPhysics`. Only the basics (A6). |
-| Aim help: the nearest good anchor is picked, and the reticle turns solid when a hit is possible | Nov 29 | Not started | New players must always find something to grab in their first 10 seconds. |
-| Outside playtests, then freeze the tuning | Dec 13 | Not started | Tuning that changes after this date invalidates route times and the comfort test. |
-| Advanced moves from the old repo (wall run, rope wrap, two-hand launch) | Dec 13 | Not started | Stretch. Only if the race is already fun without them. |
+| Basic swing with the mouse: aim, hold to attach, release, reel in, jump, run | Nov 15 | Written, not run | New, simple code that keeps the old project's numbers (gravity, speeds). All tuning is in `SwingSettings.cs`. |
+| Aim help and a reticle that fills when a web would catch | Nov 15 | Written, not run | Tries nearby directions when the aim just misses. |
+| First playtest: list the five worst things about the swing and fix them | Nov 22 | Not started | Likely suspects: starting from the ground, gaining height, turning corners. |
+| Outside playtests, then freeze the tuning | Dec 13 | Not started | Tuning that changes after this invalidates route times and the comfort test. |
+| Advanced moves from the old project (wall run, rope wrap, two-hand launch) | Dec 13 | Not started | Stretch. Only if the race is already fun without them. |
 
 ### 1부 race mode
 
 | Task | Due | Status | Why and details |
 | --- | --- | --- | --- |
-| Ring pass detection, timer, finish line, one-key restart | Nov 29 | Not started | The core loop of 1부. A one-key restart lets the next player start within seconds. |
-| One ring route: 10 rings, about 3 minutes | Nov 29 | Not started | Stored as a list of positions in a data file, so several people can make routes. Difficulty rises along the route; it starts on a rooftop. |
-| Booth flow: name entry, face calibration, countdown, run, result | Dec 6 | Not started | Fits each player into a 4-minute slot so staff never open Unity during the booth. |
-| Leaderboard per 부, saved to a local file, with a reset | Dec 6 | Not started | Prizes go to the top 3 of each 부; a file survives a crash or restart. |
-| Head-dodge obstacles (pigeons, a helicopter) | Dec 13 | Not started | Stretch. Uses the tracked eye position as the hit test, so ducking for real is the input. |
-| Hidden items that only show when the player leans | Dec 13 | Not started | Stretch. Rewards moving the head, which is what makes the window effect visible. |
+| Ring pass detection, countdown, timer, finish, one-key restart | Nov 15 | Written, not run | R restarts at once. |
+| Draft route: 10 rings in Midtown | Nov 15 | Written, not played | Rings follow real street centres. Heights and spacing are guesses. |
+| Play the route and move the rings until a new player finishes in about 3 minutes | Nov 29 | Not started | Press P in the game to log a ring line for the route file. |
+| Booth flow: name entry, face calibration, countdown, run, result | Dec 6 | Not started | Fits each player into a 4-minute slot so staff never open Unity. |
+| Leaderboard per 부, saved to a local file, with a reset | Dec 6 | Not started | Prizes go to the top 3 of each 부; a file survives a crash. |
+| Head-dodge obstacles (pigeons, a helicopter) | Dec 13 | Not started | Stretch. The tracked eye position is the hit test. |
+| Hidden items that only show when the player leans | Dec 13 | Not started | Stretch. Rewards moving the head. |
 
-### 2부 1v1
+### 2부 1v1 duel
 
 | Task | Due | Status | Why and details |
 | --- | --- | --- | --- |
-| Position sync between the two laptops over LAN | Dec 6 | Not started | UDP at 20 to 30 updates a second. The small city has one shared coordinate system, so positions are sent as they are. Sync alone already gives a "race together" mode. |
-| Opponent avatar and their web line | Dec 6 | Not started | Players need to see who they are chasing. |
-| Match rules: web pulls the opponent, rooftop capture points, 3 rounds of 90 seconds | Dec 13 | Not started | One button: aiming at a building swings, aiming at the opponent pulls them. One laptop decides hits and score. |
-| Go or no-go on the full duel | Dec 15 | Not started | If the rules are not stable by then, run 2부 as a two-player race on the synced build. |
+| Position sync between the two laptops over LAN | Dec 6 | Not started | UDP, 20 to 30 updates a second. Both laptops load the same city file, so positions are sent as they are. |
+| Opponent avatar and their web line | Dec 6 | Not started | A simple shape is enough for v1. |
+| Duel rules: web pulls the opponent, rooftop capture points, rounds | Dec 13 | Not started | One button: aiming at a building swings, aiming at the opponent pulls them. One laptop decides hits and score. |
+| Decide the match length | Dec 6 | Not started | 3 rounds of 90 seconds gives about 13 matches in 1.5 hours. See Q4 in [DECISIONS](DECISIONS.md). |
+| Duel check with two outside players | Dec 15 | Not started | If they cannot finish a duel unaided, cut rules until they can. |
 
 ### Web shooter (Bluetooth)
 
-The plan assumes the ESP32 appears to Windows as a **Bluetooth gamepad** (A7): aim is two stick axes, the trigger is a button. Windows pairs it like any controller and the game reads it directly, with no bridge program and no Wi-Fi hotspot. Details are in [hardware/README](../hardware/README.md).
+The ESP32 appears to Windows as a Bluetooth gamepad, as the hardware owner proposed: the device works out the hand direction and sends two axes and two buttons. Details are in [hardware/README](../hardware/README.md).
 
 | Task | Due | Status | Why and details |
 | --- | --- | --- | --- |
-| ESP32 firmware: sensor to yaw and pitch, trigger to a held button, sent as a Bluetooth gamepad named `SWING-1`, `SWING-2`, `SWING-3` | Nov 22 | In progress | The Arduino and HC-05 prototype works. This test also proves or rejects A7; the fallback is a Bluetooth serial link with a small bridge. Firmware lives in `hardware/` from its first commit. |
-| Game reads the device: axes to an aim ray, button down to hold the web, button up to let go | Nov 29 | Not started | Any ordinary gamepad can stand in for the device, so this can be built and tested without hardware. |
-| Find the device automatically, show connection status, fall back to the mouse | Nov 29 | Not started | A dropped device must never stop a run. |
-| Recentre with its own button, and at every countdown | Nov 29 | Not started | The prototype recentres when the IR sensor is covered for 2 seconds, which would also happen in a long swing. |
-| Measure aim drift over 3 minutes and choose MPU-6050 or BNO085 | Nov 29 | Not started | If drift stays small with a recentre per run, skip the new sensor. |
-| Bluetooth soak test: 2 devices and 2 laptops side by side for 30 minutes, with phones nearby | Dec 6 | Not started | A festival room is full of phones. Count drop-outs and reconnect time; if it is unreliable, decide on a cable fallback now, not on Dec 28. |
-| Build 3 devices with straps and power, optional vibration; wiring and pin table written down | Dec 13 | Not started | Two for 1v1 and one spare. Straps keep a swung arm from throwing the device. Check the power bank does not switch itself off at the ESP32's low current. |
+| Game reads the device: axes to the reticle, button down holds the web, button up lets go | Nov 15 | Written, not run | `WristDevice.cs`. Any ordinary gamepad stands in for the device. |
+| Device status on screen, mouse fallback | Nov 15 | Written, not run | The mouse keeps working whether or not a device is connected. |
+| Firmware starting point for the XIAO ESP32-C3 | Nov 15 | Written, not compiled | MPU-6050 for direction, flex sensor for hold, a recentre button. |
+| Flash one board; confirm Windows and Unity see it as a controller | Nov 22 | Not started | Proves the Bluetooth gamepad approach before three devices are built. |
+| Wire the flex sensor and set its thresholds; bent finger holds, straight finger lets go | Nov 29 | Not started | Replaces the infrared sensor, which could only fire once. |
+| Check the reticle directions and ranges with a real device | Nov 29 | Not started | Flip `InvertYaw` / `InvertPitch` and set the ranges in `WristDevice.cs`. |
+| Measure aim drift over 3 minutes and choose MPU-6050 or BNO085 | Nov 29 | Not started | The game recentres at every countdown; if drift stays small within one run, skip the new sensor. |
+| Decide how the view turns when playing with the device only | Nov 29 | Not started | Written now: pointing near the screen edge turns the view. Needs a playtest. |
+| Bluetooth soak test: 2 devices and 2 laptops side by side for 30 minutes, with phones nearby | Dec 6 | Not started | A festival room is full of phones. If it is unreliable, decide on a cable fallback now. |
+| Build 3 devices with straps and batteries; optional vibration; wiring written down | Dec 13 | Not started | Two for the duel and one spare. |
 
 ### Look and sound
 
 | Task | Due | Status | Why and details |
 | --- | --- | --- | --- |
-| Simple first-person hands with a firing pose | Dec 6 | Not started | The club agreed simple rounded hands look better than half-finished detailed ones. |
-| Web shoot, attach, ring and finish sounds, wind that follows speed, one music loop with a clear licence | Dec 6 | Not started | The wind sound can be ported from the old repository. |
+| Web shoot, attach, ring and finish sounds, wind that follows speed | Nov 29 | Not started | Sound does more for the swing than any visual. Placeholders first. |
+| Simple first-person hands with a firing pose | Dec 6 | Not started | The club agreed simple rounded hands look better than half-finished detail. Keep the character simple for v1. |
+| One music loop with a clear licence | Dec 6 | Not started | |
 | Ring pass flash, finish and result screen effects | Dec 13 | Not started | Clear feedback is what makes players ask for another run. |
 
 ### Spectator screen and release
 
 | Task | Due | Status | Why and details |
 | --- | --- | --- | --- |
-| Spectator view on the 전자칠판: play feed, face tracking, speed and angle, leaderboard | Dec 13 | Not started | The window effect only works for the player, so the queue needs its own screen. A second view costs frame rate; measure it. |
-| 60 fps on both booth laptops at the booth resolution, with tracking and the spectator screen on | Dec 13 | Not started | Frame drops cause dizziness. |
-| Portable offline booth release on both laptops and the spare, started by one double-click | Dec 20 | Not started | Code freeze. Nothing merges after this except crash fixes. |
+| Spectator view on the 전자칠판 | Dec 13 | Not started | Recommended: the 전자칠판's own computer runs the same game in a "watch" mode and receives the players' positions over the LAN, exactly like the second laptop in a duel. Fallback: an HDMI cable from a play laptop that mirrors its screen. |
+| 60 fps on both booth laptops at the booth resolution, tracking on | Dec 13 | Not started | Frame drops cause dizziness. |
+| Booth release on both laptops and the spare, started by one double-click | Dec 20 | Not started | Code freeze. |
 | Comfort playtest with 5 outside players | Dec 20 | Not started | Note who gets dizzy or confused, then fix only the top issues. |
 
 ## Booth preparation
 
-The two early items matter most: the team agrees on this plan, and the webcams are bought so tracking can be tested on the real cameras.
-
 | Task | Due | Status | Why and details |
 | --- | --- | --- | --- |
-| Answer the open questions, confirm who owns each area, and make one GitHub issue per task | Nov 17 | Not started | AI agents read the rules and the issue list at the start of each session, which stops people's agents from editing the same files. |
-| Buy the 2 webcams | Nov 22 | Not started | Tracking at the second seat (about 1.3 m) needs testing on the actual camera, weeks before the booth. |
-| Check the application result and the assigned room | When announced | Not started | The room decides where the monitors, the 전자칠판 and the queue go. |
-| Line up equipment: 2 monitors, 2 laptops plus a spare, LAN cable, power strips, HDMI | Dec 13 | Not started | Write down who brings what; the booth build is installed on all three laptops. |
-| Window frame from 우드락 and 시트지, sized to the play monitor | Dec 20 | Not started | Measure the monitor first; the frame must not cover the webcam. |
-| One-page poster: how to play, and why the screen looks like a window | Dec 20 | Not started | Lets people in the queue learn the controls before they sit down. |
-| Buy snacks the week of the festival | Dec 22 | Not started | Items from the application budget. |
-| Full rehearsal in a classroom: set up in 30 minutes, run the 1부 flow for 20 minutes with outside players | Dec 22 to 23 | Not started | Finds setup problems while there is still time to fix them. Pair every wrist device with its laptop here, not on the day. |
-| Day-of checklist: setup order for 08:30 to 09:00, who stands where, what to do if a laptop or device fails | Dec 27 | Not started | The booth runs 09:00 to 12:00; there is no time to work things out on the day. |
+| Buy the 2 webcams | Nov 22 | Not started | Head tracking must be tested on the real cameras. |
+| Order the wrist device parts (XIAO ESP32-C3, flex sensors, batteries, bands, motors) | Nov 18 | In progress | The list is chosen. One board is needed by Nov 22. |
+| Assign owners to the pieces above and make one GitHub issue per task | Nov 22 | Not started | After the first run works. |
+| Find out the assigned room and its 전자칠판 | When announced | Not started | The application passed. The room decides where monitors and the queue go. |
+| Line up equipment: 2 monitors, 2 laptops plus a spare, LAN cable or switch, power strips, HDMI | Dec 13 | Not started | Write down who brings what. |
+| Window frame from 우드락 and 시트지, sized to the play monitor | Dec 20 | Not started | The frame must not cover the webcam. |
+| One-page poster: how to play, and why the screen looks like a window | Dec 20 | Not started | Lets the queue learn the controls before sitting down. |
+| Buy snacks the week of the festival | Dec 22 | Not started | |
+| Full rehearsal in a classroom: set up in 30 minutes, run 1부 for 20 minutes and one duel with outside players | Dec 22 to 23 | Not started | Pair every wrist device with its laptop here, not on the day. |
+| Day-of checklist: setup order for 08:30 to 09:00, the 10:30 switch to 2부, what to do if a laptop or device fails | Dec 27 | Not started | |
 
-## Risks and decisions
+### How many people can play
 
-The biggest risk is still time. The restart leaves six weeks, and the first of them rebuilds things the old repository already had.
+| Part | Time | Per turn | Players |
+| --- | --- | --- | --- |
+| 1부 race | 90 minutes | 4 minutes per player | About 22 on one laptop, about 44 if both laptops run the race |
+| 2부 duel | 90 minutes | About 6.5 minutes (3 × 90 seconds plus changeover) | About 13 matches, 26 players |
 
-| Risk or decision | What to do |
+## Risks
+
+| Risk | What to do |
 | --- | --- |
-| Six weeks from an empty repository | Hold the order: greybox, race, flow, then looks. Hold a 30-minute check-in every Sunday until Dec 20 where each person reports what merged, not what was tried. |
+| The project does not open or play in Unity first time | Expected. It is the first task, and nothing else starts until it is fixed. |
+| Six weeks to the booth | Hold the order: runs, fun, flow, duel, looks. A 30-minute check-in every Sunday where each person reports what merged. |
 | The city gets heavy again | The weight budget is checked in every pull request and on the weakest laptop every Sunday. |
-| Too much of the old swing is ported | Basics only until the race works. Advanced moves are stretch. |
-| Bluetooth is unreliable in a crowded room | Soak test by Dec 6, mouse fallback with no restart, a charged spare device, devices paired at the rehearsal. |
-| The Bluetooth gamepad approach (A7) does not work | It is tested in the first week. The fallback is a Bluetooth serial link plus a small bridge program. |
-| One person writes almost all the code again | Everyone runs the project by Nov 22, and tasks are split so the race, the device, the sync and the look can move at the same time. |
-| The full duel swallows the schedule | Go or no-go on Dec 15; the fallback is a two-player race on the synced build. |
-| Spider-Man name, suit or logo in a public repository | Keep the old rule: an original web-swinging hero and a neutral name in everything that is committed (A11). |
-| Players get dizzy | Seated play only, 3-minute runs, the window frame as a fixed reference, and the comfort test on Dec 20 decides the final tuning. |
-| Exams or school events inside the six weeks | Not known yet (Q15). If a week is lost, cut stretch tasks first and the duel second. |
+| The swing is not fun with basic physics | Playtest in the first week. Port one advanced move at a time only if needed. |
+| Head tracking costs too much on a weak laptop | It has an off switch, and the booth laptops are the ones that must run it. Measure on Nov 29. |
+| Bluetooth is unreliable in a crowded room | Soak test by Dec 6, mouse fallback with no restart, a charged spare, devices paired at the rehearsal. |
+| The duel swallows the schedule | Sync first, because a synced race is already a two-player mode. The duel check on Dec 15 cuts rules, not the date. |
+| One person writes almost all the code again | The work is split by file in "Where the team takes over". |
+| Players get dizzy | Seated play, 3-minute runs, the window frame as a fixed reference, the comfort test on Dec 20. |
