@@ -71,7 +71,7 @@ If a date slips, cut stretch tasks first, then the full duel. The Dec 20 freeze 
 
 ## Development tasks
 
-30 tasks in six areas. The ones due Nov 22 unblock everything else. Owners are not listed yet; they come from the answer to Q10.
+33 tasks in seven areas. The ones due Nov 22 unblock everything else. Owners are not listed yet; they come from the answer to Q10.
 
 ### Foundation and city
 
