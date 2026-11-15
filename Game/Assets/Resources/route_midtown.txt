@@ -1,0 +1,24 @@
+# Midtown loop: north up 6th Avenue, east along 57th Street, south down Park Avenue.
+# About 2.8 km. Placed by measuring the street centres in the data.
+# NOT playtested yet: heights and spacing are a first guess.
+#
+# Coordinates are game metres: X east across the avenues, Y up, Z north along
+# the avenues. (0, 0) is the Empire State Building.
+#
+#     start  x  y  z  yawDegrees      eye position; yaw 0 faces north (+Z), 90 faces east
+#     ring   x  y  z  radius          rings are passed in the order listed; the last one is the finish
+
+name Midtown loop
+
+start  -197   87   468   0        # rooftop on the east side of 6th Avenue near 39th Street
+
+ring   -225   62   686   11       # 6th Avenue at 42nd Street (Bryant Park on the right)
+ring   -225   55  1010   11       # 6th Avenue at 46th Street
+ring   -225   70  1330   11       # 6th Avenue at 50th Street (Radio City)
+ring   -225   58  1648   11       # 6th Avenue at 54th Street
+ring   -190   62  1890   11       # the corner: turn right onto 57th Street
+ring     86   58  1890   11       # 57th Street at 5th Avenue
+ring    392   62  1888   12       # the corner: turn right onto Park Avenue
+ring    397   55  1486   14       # Park Avenue at 52nd Street
+ring    397   50  1169   14       # Park Avenue at 48th Street
+ring    397   45  1060   14       # finish, in front of the tower that closes Park Avenue
