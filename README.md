@@ -2,7 +2,7 @@
 
 A head-tracked monitor game: the screen becomes a window into Manhattan, and you swing between buildings on webs aimed with a wrist device. Built by the SSHS AI club for the 천년제 booth on **Dec 29, 2026**.
 
-Status: **a first playable version is written but has not been opened in Unity yet.** Midtown as box buildings, a mouse-controlled web swing, a 10-ring timed race and a HUD are in place. Head tracking, sound, the leaderboard and the 1v1 duel are not started. See the [plan](docs/PLAN.md#where-we-are) for what has and has not been checked.
+Status: **the first version runs in Unity**: Midtown as box buildings, a mouse-controlled web swing, a 10-ring timed race and a HUD. Name entry, a leaderboard, sounds and head tracking are written but not yet run. The 1v1 duel is not started. See the [plan](docs/PLAN.md#where-we-are) for what has and has not been checked.
 
 This repository is a fresh start. The earlier attempt, [manhattan-headtracked-viewer](https://github.com/sshs-ai-club/manhattan-headtracked-viewer), is kept as a reference.
 
@@ -13,6 +13,7 @@ This repository is a fresh start. The earlier attempt, [manhattan-headtracked-vi
 | [docs/QUICKSTART.md](docs/QUICKSTART.md) | Installing Unity, opening the project, controls |
 | [docs/PLAN.md](docs/PLAN.md) | The booth to-do: milestones, tasks, risks, and where the team takes over |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | What is decided, the choices made while building, and open questions |
+| [docs/HEAD-TRACKING.md](docs/HEAD-TRACKING.md) | Setting up the webcam window effect |
 | [hardware/README.md](hardware/README.md) | The wrist device and how it talks to the game |
 | [AGENTS.md](AGENTS.md) | Rules for everyone, and for AI agents, working here |
 
@@ -37,4 +38,4 @@ tools/city/  rebuilds the city file from NYC open data (not needed to play)
 
 ## Credits
 
-City data comes from [NYC Open Data](https://opendata.cityofnewyork.us/) under its terms of use; see [tools/city/README.md](tools/city/README.md).
+City data comes from [NYC Open Data](https://opendata.cityofnewyork.us/) under its terms of use; see [tools/city/README.md](tools/city/README.md). Head tracking uses the [Head Tracked Display](https://github.com/lollipop190000/head-tracked-display) package (MIT licence), copied into `Game/Packages/`.

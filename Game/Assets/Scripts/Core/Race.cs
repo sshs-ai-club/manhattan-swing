@@ -31,6 +31,15 @@ namespace Swing.Core
             State = RaceState.Waiting;
         }
 
+        /// <summary>Back to waiting, for the next player.</summary>
+        public void Reset()
+        {
+            State = RaceState.Waiting;
+            NextRing = 0;
+            Time = 0;
+            Splits.Clear();
+        }
+
         public void StartCountdown()
         {
             State = RaceState.Countdown;

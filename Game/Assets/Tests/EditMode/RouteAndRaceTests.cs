@@ -73,6 +73,20 @@ namespace Swing.Core.Tests
         }
 
         [Test]
+        public void ResetGoesBackToWaitingForTheNextPlayer()
+        {
+            var race = new Race(Route.Parse(TwoRings));
+            race.StartCountdown();
+            race.Update(5f, Vector3.Zero, Vector3.Zero);
+            race.Update(1f, new Vector3(0, 10, 99), new Vector3(0, 10, 101));
+            race.Reset();
+            Assert.AreEqual(RaceState.Waiting, race.State);
+            Assert.AreEqual(0, race.NextRing);
+            Assert.AreEqual(0f, race.Time);
+            Assert.AreEqual(0, race.Splits.Count);
+        }
+
+        [Test]
         public void TheSecondRingDoesNotCountBeforeTheFirst()
         {
             var race = new Race(Route.Parse(TwoRings));

@@ -23,6 +23,10 @@ Decided by @SW on Nov 15, 2026, unless another name is given.
 | S13 | Basic gameplay is built first, without assigning team roles. The plan states the point where the team takes over. |
 | S14 | Windows only, first person, seated play, a 4-minute slot per player, a leaderboard and top-3 prizes per 부. |
 | S15 | Two webcams will be bought. |
+| S16 | The spectator screen is a third laptop connected to the 전자칠판 by HDMI. |
+| S17 | A duel is three rounds of 90 seconds, for now. |
+| S18 | In 1부 both laptops run the race. |
+| S19 | The room is 외국어 강의실 4, with two player seats (A and B), a queue area and the 전자칠판. |
 
 ## Choices made while building
 
@@ -42,6 +46,11 @@ These were made to get a first version written. Each can be changed; say so befo
 | C10 | With a wrist device, pointing near the screen edge turns the view. | The game can then be played with one hand. | Unproven; needs a playtest. |
 | C11 | The flex sensor is the hold trigger, and recentring gets its own button and also happens at each countdown. | The infrared sensor could only fire once, and its 2-second cover would recentre during a long swing. | One more button to wire. |
 | C12 | Nothing committed uses the Spider-Man name, suit, logo, music or sounds. The working title is Manhattan Swing. | The repository is public. | Follows from S11; revisit when character work starts. |
+| C13 | The head-tracking package is copied into `Game/Packages/` instead of being downloaded by Unity. | Opening the project then needs no Git download and cannot fail on a laptop without Git on its path. | Updating the package means copying a newer version in. |
+| C14 | Head tracking is compiled separately and only when the package is present; it starts switched off. | The game must run without a webcam or the package. | One extra small interface (`IHeadTracking`). |
+| C15 | Sound effects are made from maths at start-up, not from audio files. | No downloads, no licences, and they could be tested here. | They are plain; replace them with recordings when someone has better ones. |
+| C16 | The leaderboard is a text file in Unity's per-user data folder on each laptop, written after every run. Reset renames the old file. | Survives a crash; a reset by mistake can be undone. | Two laptops keep two files (see Q7). |
+| C17 | After a finish, R runs again with the same name and Enter goes to the next player. | Fast retries while testing, a clean hand-over at the booth. | At the booth, staff may want R disabled so nobody takes two turns. |
 
 ## Open questions
 
@@ -49,7 +58,9 @@ These were made to get a first version written. Each can be changed; say so befo
 | --- | --- | --- |
 | Q1 | Which laptop on the team is the weakest (CPU, graphics, RAM)? It will show up when everyone reports their frame rate. | The frame-rate target in the budget. |
 | Q2 | Does head tracking run fast enough on the booth laptops with the game? Not known until it is added and measured. | Whether the existing tracker is kept or changed. |
-| Q3 | Does the 전자칠판 have its own Windows computer, and can it join the same network as the booth laptops? If yes, it runs the game in watch mode. If not, an HDMI cable from a play laptop mirrors that screen. | The spectator screen. |
-| Q4 | How long is one duel? 3 rounds of 90 seconds lets about 26 people play in 1.5 hours; one 2-minute round would roughly double that. | 2부 rules and how the queue is run. |
-| Q5 | Do both laptops run the race during 1부 (about 44 players) or only one (about 22)? | Equipment and staffing. |
-| Q6 | Who owns which piece of work? Deferred until the first run works. | Issues and reviews. |
+| Q3 | How did the first run feel: frame rate, the swing, the route? Only "works well" is recorded so far. | What to tune first. |
+| Q4 | With head tracking on, the view is as wide as the real monitor looks from the seat, which is narrower than the ordinary view. Is that good for swinging, or should the window be made to act wider? | Head tracking tuning. |
+| Q5 | Does typing a Korean name work on the name screen? | Booth turn. |
+| Q6 | Who owns which piece of work? Deferred. | Issues and reviews. |
+| Q7 | In 1부 the two laptops keep separate leaderboards. Compare the top 3 by hand at 10:30, or send both to one file over the LAN? | Prizes. |
+| Q8 | At the booth, should R (run again with the same name) be switched off? | Fair turns. |

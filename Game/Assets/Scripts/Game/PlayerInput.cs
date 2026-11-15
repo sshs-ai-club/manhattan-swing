@@ -22,11 +22,25 @@ namespace Swing.Game
         /// <summary>Walking and steering: x = right, y = forward, each -1 to 1.</summary>
         public Vector2 Move;
         public bool Hold, Reel, Jump;
-        public bool RestartPressed, ConfirmPressed, CancelPressed, RecentrePressed;
-        /// <summary>Developer key: write the current position to the log as a route line.</summary>
+
+        // Keys that act once when pressed.
+        public bool RestartPressed;         // R
+        public bool EnterPressed;           // Enter
+        public bool ClickPressed;           // left mouse button
+        public bool CancelPressed;          // Esc
+        public bool RecentrePressed;        // C: wrist device
+        public bool TrackingPressed;        // H: head tracking on/off
+        public bool CaptureFacePressed;     // K: head tracking face reference
+        public bool SetupPressed;           // F2: setup panel
+        public bool ResetBoardPressed;      // Ctrl + Shift + Delete
+        /// <summary>P, a developer key: write the current position to the log as a route line.</summary>
         public bool MarkPressed;
 
-        public void Update(float deltaTime)
+        /// <param name="typing">
+        /// True while the player is typing in a text box. Letter keys then go to the text box only,
+        /// so typing a name with an R in it does not restart the run.
+        /// </param>
+        public void Update(float deltaTime, bool typing)
         {
             Keyboard keyboard = Keyboard.current;
             Mouse mouse = Mouse.current;
@@ -35,27 +49,36 @@ namespace Swing.Game
             Look = Vector2.zero;
             Move = Vector2.zero;
             Hold = Reel = Jump = false;
-            RestartPressed = ConfirmPressed = CancelPressed = RecentrePressed = MarkPressed = false;
+            RestartPressed = EnterPressed = ClickPressed = CancelPressed = RecentrePressed = false;
+            TrackingPressed = CaptureFacePressed = SetupPressed = ResetBoardPressed = MarkPressed = false;
 
             if (mouse != null)
             {
                 Look = mouse.delta.ReadValue() * MouseDegreesPerPixel;
                 Hold = mouse.leftButton.isPressed;
                 Reel = mouse.rightButton.isPressed;
-                ConfirmPressed = mouse.leftButton.wasPressedThisFrame;
+                ClickPressed = mouse.leftButton.wasPressedThisFrame;
             }
             if (keyboard != null)
             {
-                Move = new Vector2(
-                    (keyboard.dKey.isPressed ? 1 : 0) - (keyboard.aKey.isPressed ? 1 : 0),
-                    (keyboard.wKey.isPressed ? 1 : 0) - (keyboard.sKey.isPressed ? 1 : 0));
-                Reel |= keyboard.eKey.isPressed;
-                Jump = keyboard.spaceKey.wasPressedThisFrame;
-                RestartPressed = keyboard.rKey.wasPressedThisFrame;
-                RecentrePressed = keyboard.cKey.wasPressedThisFrame;
                 CancelPressed = keyboard.escapeKey.wasPressedThisFrame;
-                MarkPressed = keyboard.pKey.wasPressedThisFrame;
-                ConfirmPressed |= keyboard.enterKey.wasPressedThisFrame;
+                SetupPressed = keyboard.f2Key.wasPressedThisFrame;
+                EnterPressed = keyboard.enterKey.wasPressedThisFrame;
+                ResetBoardPressed = keyboard.ctrlKey.isPressed && keyboard.shiftKey.isPressed &&
+                                    keyboard.deleteKey.wasPressedThisFrame;
+                if (!typing)
+                {
+                    Move = new Vector2(
+                        (keyboard.dKey.isPressed ? 1 : 0) - (keyboard.aKey.isPressed ? 1 : 0),
+                        (keyboard.wKey.isPressed ? 1 : 0) - (keyboard.sKey.isPressed ? 1 : 0));
+                    Reel |= keyboard.eKey.isPressed;
+                    Jump = keyboard.spaceKey.wasPressedThisFrame;
+                    RestartPressed = keyboard.rKey.wasPressedThisFrame;
+                    RecentrePressed = keyboard.cKey.wasPressedThisFrame;
+                    TrackingPressed = keyboard.hKey.wasPressedThisFrame;
+                    CaptureFacePressed = keyboard.kKey.wasPressedThisFrame;
+                    MarkPressed = keyboard.pKey.wasPressedThisFrame;
+                }
             }
 
             if (Wrist.Connected)

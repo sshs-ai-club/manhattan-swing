@@ -20,6 +20,7 @@ namespace Swing.Game
         public readonly SwingBody Body;
         private readonly CityCollision city;
         private readonly Camera camera;
+        private readonly Transform eyes;   // the player's head; the camera hangs under it
         private readonly LineRenderer webLine;
 
         private float yaw, pitch;   // view direction in degrees; pitch is positive looking up
@@ -27,11 +28,17 @@ namespace Swing.Game
         /// <summary>True when holding now would catch a building. The HUD fills the reticle.</summary>
         public bool CanAttach { get; private set; }
         public float Speed { get { return Body.Velocity.Length(); } }
+        /// <summary>True on the frame the player starts holding (a web is fired, whether or not it catches).</summary>
+        public bool FiredThisFrame { get; private set; }
+        /// <summary>True on the frame a web catches a building.</summary>
+        public bool AttachedThisFrame { get; private set; }
+        private bool wasHolding;
 
-        public Player(CityCollision city, Camera camera, Material lineMaterial)
+        public Player(CityCollision city, Camera camera, Transform eyes, Material lineMaterial)
         {
             this.city = city;
             this.camera = camera;
+            this.eyes = eyes;
             Body = new SwingBody(city);
 
             webLine = new GameObject("Web").AddComponent<LineRenderer>();
@@ -47,29 +54,33 @@ namespace Swing.Game
             Body.Teleport(position);
             yaw = yawDegrees;
             pitch = 0;
-            ApplyToCamera();
+            ApplyToEyes();
         }
 
         /// <summary>One frame. When <paramref name="frozen"/> the player can look and aim but not move.</summary>
         public void Tick(float deltaTime, PlayerInput input, bool frozen)
         {
             Turn(deltaTime, input);
-            ApplyToCamera();   // the aim ray below needs the camera's new direction
+            ApplyToEyes();   // the aim ray below needs the new view direction
 
             Ray aim = camera.ViewportPointToRay(new Vector3(input.Aim.x, input.Aim.y, 0));
             RayHit hit;
             CanAttach = AimAssist.FindAnchor(city, Body.Position, aim.direction.ToCore(),
                 Body.Settings.MaxWebLength, Body.Settings.MinWebLength, out hit);
 
+            FiredThisFrame = AttachedThisFrame = false;
             if (frozen)
             {
                 Body.Release();
+                wasHolding = false;
             }
             else
             {
                 // Holding keeps trying until the web catches something; letting go releases it.
+                FiredThisFrame = input.Hold && !wasHolding;
+                wasHolding = input.Hold;
                 if (!input.Hold) Body.Release();
-                else if (!Body.Attached && CanAttach) Body.Attach(hit.Point);
+                else if (!Body.Attached && CanAttach) AttachedThisFrame = Body.Attach(hit.Point);
 
                 Body.Step(deltaTime, new SwingInput
                 {
@@ -79,7 +90,7 @@ namespace Swing.Game
                 });
             }
 
-            ApplyToCamera();
+            ApplyToEyes();
             DrawWeb();
         }
 
@@ -109,9 +120,9 @@ namespace Swing.Game
             return (forward * move.y + right * move.x).ToCore();
         }
 
-        private void ApplyToCamera()
+        private void ApplyToEyes()
         {
-            camera.transform.SetPositionAndRotation(Body.Position.ToUnity(), Quaternion.Euler(-pitch, yaw, 0));
+            eyes.SetPositionAndRotation(Body.Position.ToUnity(), Quaternion.Euler(-pitch, yaw, 0));
         }
 
         private void DrawWeb()
@@ -119,7 +130,6 @@ namespace Swing.Game
             webLine.enabled = Body.Attached;
             if (!Body.Attached) return;
             // The line starts a little below and to the right of the eyes, where a hand would be.
-            Transform eyes = camera.transform;
             webLine.SetPosition(0, eyes.position + eyes.right * 0.25f - eyes.up * 0.3f + eyes.forward * 0.4f);
             webLine.SetPosition(1, Body.Anchor.ToUnity());
         }
