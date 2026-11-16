@@ -27,6 +27,8 @@ namespace Swing.Game
         private GameAudio sound;
         private LeaderboardFile scores;
         private IHeadTracking tracking;   // null when the head-tracking package is not installed
+        private GameOptions options;
+        private CityCollision cityCollision;
         private int lastPlace;
         private int lastCountdownBeep;
         private float framesPerSecond = 60;
@@ -43,7 +45,8 @@ namespace Swing.Game
 
             CityData city = CityData.Load(Resources.Load<TextAsset>(CityFile).bytes);
             Route route = Route.Parse(Resources.Load<TextAsset>(RouteFile).text);
-            var collision = new CityCollision(city);
+            var collision = cityCollision = new CityCollision(city);
+            options = new GameOptions();
             Shader unlit = Resources.Load<Shader>("Shaders/SwingUnlit");
 
             CityView.Build(city);
@@ -76,10 +79,10 @@ namespace Swing.Game
             if (Cursor.lockState != CursorLockMode.Locked) input.Look = Vector2.zero;
 
             System.Numerics.Vector3 before = player.Body.Position;
-            bool frozen = race.State == RaceState.Waiting || race.State == RaceState.Countdown;
+            bool frozen = race.State == RaceState.Waiting || race.State == RaceState.Countdown || race.State == RaceState.TimedOut;
             if (tracking != null && tracking.TurnWithHead && race.State != RaceState.Waiting)
                 input.Look.x += HeadTurn.DegreesPerSecond(tracking.HeadYawDegrees) * deltaTime;
-            player.Tick(deltaTime, input, frozen);
+            player.Tick(deltaTime, input, frozen, options.FollowTravel);
             if (player.FiredThisFrame) sound.WebShoot();
             if (player.AttachedThisFrame) sound.WebAttach();
             sound.SetSpeed(frozen ? 0 : player.Speed);
@@ -94,11 +97,13 @@ namespace Swing.Game
                 hud.SetupOpen = !hud.SetupOpen;
                 hud.TuningOpen = false;
             }
-            if (input.TuningPressed)
+            if (input.TuningPressed && !options.BoothMode)
             {
                 hud.TuningOpen = !hud.TuningOpen;
                 hud.SetupOpen = false;
             }
+            // In booth mode a player cannot restart or take another turn alone: R needs Ctrl held.
+            bool restart = input.RestartPressed && (!options.BoothMode || input.CtrlHeld);
             if (hud.SetupOpen || hud.TuningOpen) Cursor.lockState = CursorLockMode.None;
             if (input.CancelPressed) Cursor.lockState = CursorLockMode.None;
 
@@ -113,17 +118,20 @@ namespace Swing.Game
                     break;
                 case RaceState.Countdown:
                 case RaceState.Running:
-                    if (input.RestartPressed) StartRun();
+                    if (restart) StartRun();
                     else if (input.ClickPressed && !hud.SetupOpen && !hud.TuningOpen) Cursor.lockState = CursorLockMode.Locked;
+                    bool lost = !cityCollision.IsInsideCity(player.Body.Position.X, player.Body.Position.Z, 100);
+                    if (race.State == RaceState.Running && (input.CheckpointPressed || lost)) BackToCheckpoint();
                     break;
                 case RaceState.Finished:
-                    if (input.RestartPressed) StartRun();
+                case RaceState.TimedOut:
+                    if (restart) StartRun();
                     else if (input.EnterPressed) NextPlayer();
                     break;
             }
             hud.StartRequested = false;
 
-            if (input.MarkPressed)
+            if (input.MarkPressed && !options.BoothMode)
             {
                 // For making routes: paste this line into a route file.
                 Vector3 p = view.transform.position;
@@ -147,6 +155,8 @@ namespace Swing.Game
             bool passedRing = race.Update(deltaTime, before, player.Body.Position);
             if (stateBefore == RaceState.Countdown && race.State == RaceState.Running) sound.GoBeep();
 
+            if (stateBefore == RaceState.Running && race.State == RaceState.TimedOut) sound.CountdownBeep();
+
             if (!passedRing) return;
             rings.Show(race.NextRing);
             if (race.State == RaceState.Finished)
@@ -154,7 +164,11 @@ namespace Swing.Game
                 sound.Finish();
                 lastPlace = scores.Add(hud.Name, race.Time);
             }
-            else sound.RingPass();
+            else
+            {
+                sound.RingPass();
+                hud.RingPassed(race.NextRing, race.Time);
+            }
         }
 
         private void OnGUI()
@@ -162,7 +176,7 @@ namespace Swing.Game
             hud.Draw(new HudInfo
             {
                 Race = race, Player = player, Input = input, Camera = view, FramesPerSecond = framesPerSecond,
-                Scores = scores, LastPlace = lastPlace, Tracking = tracking,
+                Scores = scores, LastPlace = lastPlace, Tracking = tracking, Options = options,
             });
         }
 
@@ -177,6 +191,16 @@ namespace Swing.Game
             lastPlace = 0;
             lastCountdownBeep = 0;
             if (input.Wrist.Connected) input.Wrist.Recentre();
+        }
+
+        /// <summary>For a player who is lost or stuck: back to the last ring passed. The clock keeps running.</summary>
+        private void BackToCheckpoint()
+        {
+            System.Numerics.Vector3 position, velocity;
+            float yaw;
+            race.Checkpoint(out position, out yaw, out velocity);
+            player.PlaceAt(position, yaw, velocity);
+            hud.Flash("Back to the last ring");
         }
 
         /// <summary>Back to the name screen for whoever is next in the queue.</summary>

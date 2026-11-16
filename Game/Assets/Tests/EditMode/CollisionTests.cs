@@ -87,6 +87,15 @@ namespace Swing.Core.Tests
         }
 
         [Test]
+        public void TheCityKnowsItsOwnEdge()
+        {
+            CityCollision city = OneTower();   // one tower at (100, 100)
+            Assert.IsTrue(city.IsInsideCity(100, 100, 0));
+            Assert.IsFalse(city.IsInsideCity(600, 100, 0));
+            Assert.IsTrue(city.IsInsideCity(600, 100, 600), "a margin widens the edge");
+        }
+
+        [Test]
         public void ASphereInOpenAirIsNotMoved()
         {
             var centre = new Vector3(50, 30, 50);

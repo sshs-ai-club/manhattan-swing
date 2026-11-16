@@ -27,6 +27,11 @@ namespace Swing.Core
         public float MinWebLength = 2f;
         public float ReelSpeed = 24f;           // m/s the web shortens while reeling
         /// <summary>
+        /// "Zip" style: holding a web always pulls you towards where it is fixed, instead of letting
+        /// you swing under it. Simpler with a one-button device; less like a swing.
+        /// </summary>
+        public bool HoldReels = false;
+        /// <summary>
         /// While you stand on something and hold a web, the web reels in by itself and lifts you off.
         /// This lets a one-button device start a swing from the ground.
         /// </summary>

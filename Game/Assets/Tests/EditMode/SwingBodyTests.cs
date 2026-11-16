@@ -155,6 +155,17 @@ namespace Swing.Core.Tests
         }
 
         [Test]
+        public void InZipStyleHoldingAWebPullsYouToIt()
+        {
+            var body = new SwingBody(new CityCollision(new CityData()), new SwingSettings { HoldReels = true });
+            body.Teleport(new Vector3(0, 50, 0));
+            body.Attach(new Vector3(0, 120, 60));
+            float start = Vector3.Distance(body.Position, body.Anchor);
+            for (int i = 0; i < 120; i++) body.Step(Frame, new SwingInput());
+            Assert.Less(Vector3.Distance(body.Position, body.Anchor), start - 30f);
+        }
+
+        [Test]
         public void WebsCannotReachFurtherThanTheirMaximumLength()
         {
             SwingBody body = BodyInEmptyWorld();

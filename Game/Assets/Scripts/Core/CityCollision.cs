@@ -61,6 +61,13 @@ namespace Swing.Core
             }
         }
 
+        /// <summary>True when (x, z) is inside the city's edge, or within <paramref name="margin"/> metres of it.</summary>
+        public bool IsInsideCity(float x, float z, float margin)
+        {
+            return x >= minX - margin && z >= minZ - margin &&
+                   x <= minX + cellsX * CellSize + margin && z <= minZ + cellsZ * CellSize + margin;
+        }
+
         /// <summary>Finds the first building or ground hit along a ray. <paramref name="direction"/> must have length 1.</summary>
         public bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, out RayHit hit)
         {

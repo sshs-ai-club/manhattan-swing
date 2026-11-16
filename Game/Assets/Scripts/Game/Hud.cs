@@ -17,6 +17,7 @@ namespace Swing.Game
         public int LastPlace;
         /// <summary>Null when head tracking is not installed.</summary>
         public IHeadTracking Tracking;
+        public GameOptions Options;
     }
 
     /// <summary>
@@ -45,12 +46,21 @@ namespace Swing.Game
         private float messageUntil;
         private string widthText, heightText, distanceText;
         private float confirmResetUntil;
+        private string ringText = "";
+        private float ringFlashStart = -10f;
 
         /// <summary>Shows a short message in the middle of the screen for a few seconds.</summary>
         public void Flash(string text)
         {
             message = text;
             messageUntil = Time.unscaledTime + 3f;
+        }
+
+        /// <summary>Call when a ring is passed: a brief flash and the time at that ring.</summary>
+        public void RingPassed(int ringsPassed, float time)
+        {
+            ringText = "RING " + ringsPassed + "    " + FormatTime(time);
+            ringFlashStart = Time.unscaledTime;
         }
 
         public void Draw(HudInfo info)
@@ -69,7 +79,7 @@ namespace Swing.Game
             if (info.Tracking != null) status += "\n" + info.Tracking.Status;
             Text(new Rect(24, height - 96, 1200, 80), status, small, TextAnchor.LowerLeft);
 
-            if (race.State == RaceState.Running || race.State == RaceState.Finished)
+            if (race.State == RaceState.Running || race.State == RaceState.Finished || race.State == RaceState.TimedOut)
             {
                 Text(new Rect(0, 20, width, 70), FormatTime(race.Time), large, TextAnchor.UpperCenter);
                 Text(new Rect(0, 90, width, 40),
@@ -86,7 +96,8 @@ namespace Swing.Game
                     Text(new Rect(0, below.y, width, 50), "Type your name and press Enter", medium, TextAnchor.UpperCenter);
                     DrawNameField(new Rect(width / 2 - 230, below.y + 60, 460, 70));
                     Text(new Rect(0, below.y + 160, width, 200),
-                        "Hold left mouse: web      Right mouse / E: reel in      Space: jump      W A S D: move\nR: restart      Esc: free the mouse      F2: setup      F3: tuning",
+                        "Hold left mouse: web      Right mouse / E: reel in      Space: jump      W A S D: move\n" +
+                        (info.Options.BoothMode ? "Backspace: back to the last ring" : "R: restart      Backspace: back to the last ring      Esc: free the mouse      F2: setup      F3: tuning"),
                         small, TextAnchor.UpperCenter);
                     DrawLeaderboard(info, new Rect(width - 470, 150, 440, 600), 0);
                     break;
@@ -96,11 +107,20 @@ namespace Swing.Game
                     break;
                 case RaceState.Running:
                     if (race.Time < 1f) Text(centre, "GO", huge, TextAnchor.MiddleCenter);
+                    DrawRingFlash(width, height);
+                    if (race.TimeLimitSeconds > 0 && race.TimeLimitSeconds - race.Time < 30)
+                        Text(new Rect(0, 136, width, 40), string.Format("{0:0} seconds left", race.TimeLimitSeconds - race.Time), medium, TextAnchor.UpperCenter);
+                    break;
+                case RaceState.TimedOut:
+                    Text(centre, "TIME UP", huge, TextAnchor.MiddleCenter);
+                    Text(below, string.Format("{0}: {1} of {2} rings\n\n{3}", Leaderboard.CleanName(Name), race.NextRing,
+                            race.Route.Rings.Length, AfterRunHint(info)), medium, TextAnchor.UpperCenter);
+                    DrawLeaderboard(info, new Rect(width - 470, 150, 440, 600), 0);
                     break;
                 case RaceState.Finished:
                     Text(centre, "FINISH  " + FormatTime(race.Time), huge, TextAnchor.MiddleCenter);
-                    Text(below, string.Format("{0}: place {1} of {2}\n\nR: run again      Enter: next player",
-                            Leaderboard.CleanName(Name), info.LastPlace, info.Scores.Board.Count),
+                    Text(below, string.Format("{0}: place {1} of {2}\n\n{3}",
+                            Leaderboard.CleanName(Name), info.LastPlace, info.Scores.Board.Count, AfterRunHint(info)),
                         medium, TextAnchor.UpperCenter);
                     DrawLeaderboard(info, new Rect(width - 470, 150, 440, 600), info.LastPlace);
                     break;
@@ -119,6 +139,20 @@ namespace Swing.Game
         {
             int minutes = (int)(seconds / 60);
             return string.Format(CultureInfo.InvariantCulture, "{0}:{1:00.00}", minutes, seconds - minutes * 60);
+        }
+
+        private static string AfterRunHint(HudInfo info)
+        {
+            return info.Options.BoothMode ? "Thank you! Please let the next player sit down.\n(Staff: Enter)" : "R: run again      Enter: next player";
+        }
+
+        /// <summary>A quick yellow wash over the screen and the time at the ring, fading over a second.</summary>
+        private void DrawRingFlash(float width, float height)
+        {
+            float age = Time.unscaledTime - ringFlashStart;
+            if (age > 1.5f) return;
+            if (age < 0.25f) Fill(new Rect(0, 0, width, height), new Color(1f, 0.85f, 0.1f, 0.25f * (1 - age / 0.25f)));
+            Text(new Rect(0, height * 0.3f, width, 60), ringText, large, TextAnchor.MiddleCenter);
         }
 
         private static string DeviceStatus(WristDevice wrist)
@@ -248,6 +282,13 @@ namespace Swing.Game
             }
 
             GUILayout.Space(20 * scale);
+            bool booth = GUILayout.Toggle(info.Options.BoothMode, "  Booth mode (players cannot restart; Ctrl+R for staff)", panelText);
+            if (booth != info.Options.BoothMode)
+            {
+                info.Options.BoothMode = booth;
+                info.Options.Save();
+                if (booth) TuningOpen = false;
+            }
             GUILayout.Label("Leaderboard: " + info.Scores.Board.Count + " runs saved", panelText);
             bool confirming = Time.unscaledTime < confirmResetUntil;
             if (GUILayout.Button(confirming ? "Click again to empty the leaderboard" : "Reset leaderboard", panelButton))
@@ -273,7 +314,7 @@ namespace Swing.Game
         private void DrawTuning(HudInfo info)
         {
             SwingSettings s = info.Player.Body.Settings;
-            var area = new Rect(24, 70, 700, 900);
+            var area = new Rect(24, 70, 700, 990);
             Fill(area, new Color(0, 0, 0, 0.8f));
             GUILayout.BeginArea(Scaled(new Rect(area.x + 20, area.y + 16, area.width - 40, area.height - 32)));
             GUILayout.Label("TUNING   (F3 closes, changes last until you quit)", panelText);
@@ -296,6 +337,13 @@ namespace Swing.Game
             s.MaxWebLength = Slider("Longest web", s.MaxWebLength, 60, 300, "0");
             s.MaxSpeed = Slider("Top speed", s.MaxSpeed, 30, 120, "0");
             s.AutoReelOnGround = GUILayout.Toggle(s.AutoReelOnGround, "  Web lifts you off the ground by itself", panelText);
+            s.HoldReels = GUILayout.Toggle(s.HoldReels, "  Zip style: holding a web pulls you to it", panelText);
+            bool follow = GUILayout.Toggle(info.Options.FollowTravel, "  View turns to face the way you travel (saved)", panelText);
+            if (follow != info.Options.FollowTravel)
+            {
+                info.Options.FollowTravel = follow;
+                info.Options.Save();
+            }
 
             GUILayout.Space(12 * scale);
             if (GUILayout.Button("Back to the built-in values", panelButton))
@@ -305,15 +353,15 @@ namespace Swing.Game
                 s.SwingBoostSpeed = d.SwingBoostSpeed; s.SwingBoostAcceleration = d.SwingBoostAcceleration;
                 s.AirControl = d.AirControl; s.GroundClearance = d.GroundClearance; s.ReelSpeed = d.ReelSpeed;
                 s.JumpSpeed = d.JumpSpeed; s.MaxWebLength = d.MaxWebLength; s.MaxSpeed = d.MaxSpeed;
-                s.AutoReelOnGround = d.AutoReelOnGround;
+                s.AutoReelOnGround = d.AutoReelOnGround; s.HoldReels = d.HoldReels;
             }
             if (GUILayout.Button("Write values to the Console", panelButton))
             {
                 Debug.Log(string.Format(CultureInfo.InvariantCulture,
                     "Swing tuning: Gravity {0}, SwingPullSpeed {1}, ReleaseBoost {2}, SwingBoostSpeed {3}, SwingBoostAcceleration {4}, " +
-                    "AirControl {5}, GroundClearance {6}, ReelSpeed {7}, JumpSpeed {8}, MaxWebLength {9}, MaxSpeed {10}, AutoReelOnGround {11}, mouse {12}",
+                    "AirControl {5}, GroundClearance {6}, ReelSpeed {7}, JumpSpeed {8}, MaxWebLength {9}, MaxSpeed {10}, AutoReelOnGround {11}, mouse {12}, HoldReels {13}",
                     s.Gravity, s.SwingPullSpeed, s.ReleaseBoost, s.SwingBoostSpeed, s.SwingBoostAcceleration, s.AirControl,
-                    s.GroundClearance, s.ReelSpeed, s.JumpSpeed, s.MaxWebLength, s.MaxSpeed, s.AutoReelOnGround, info.Input.MouseDegreesPerPixel));
+                    s.GroundClearance, s.ReelSpeed, s.JumpSpeed, s.MaxWebLength, s.MaxSpeed, s.AutoReelOnGround, info.Input.MouseDegreesPerPixel, s.HoldReels));
                 Flash("Values written to the Console");
             }
             GUILayout.EndArea();

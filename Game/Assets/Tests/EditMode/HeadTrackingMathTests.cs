@@ -95,6 +95,34 @@ namespace Swing.Core.Tests
         }
 
         [Test]
+        public void TheViewTurnsTowardsTheDirectionOfTravelTheShortWay()
+        {
+            var east = new Vector3(20, 0, 0);
+            Assert.Greater(ViewFollow.YawStep(0, east, 0.1f), 0f, "facing north, moving east: turn right");
+            Assert.Less(ViewFollow.YawStep(180, east, 0.1f), 0f, "facing south, moving east: turn left");
+            Assert.Less(ViewFollow.YawStep(-170, new Vector3(-1, 0, -20), 0.1f), 0f, "across the 180 line the short way");
+            Assert.AreEqual(0f, ViewFollow.YawStep(90, east, 0.1f), 0.001f, "already facing that way");
+        }
+
+        [Test]
+        public void TheViewIsLeftAloneWhenSlowOrFallingStraightDown()
+        {
+            Assert.AreEqual(0f, ViewFollow.YawStep(0, new Vector3(3, 0, 0), 0.1f));
+            Assert.AreEqual(0f, ViewFollow.YawStep(0, new Vector3(0, -60, 0), 0.1f));
+        }
+
+        [Test]
+        public void TheViewNeverTurnsFasterThanItsLimitOrPastItsTarget()
+        {
+            float step = ViewFollow.YawStep(0, new Vector3(-20, 0, -1), 0.1f);   // nearly behind
+            Assert.AreEqual(ViewFollow.MaxDegreesPerSecond * 0.1f, Math.Abs(step), 0.001f);
+
+            float yaw = 0;
+            for (int i = 0; i < 600; i++) yaw += ViewFollow.YawStep(yaw, new Vector3(20, 0, 0), 1f / 60f);
+            Assert.AreEqual(90f, yaw, 0.5f, "it settles on the travel direction without overshooting");
+        }
+
+        [Test]
         public void SmallHeadTurnsDoNothingAndLargerOnesTurnTheView()
         {
             Assert.AreEqual(0f, HeadTurn.DegreesPerSecond(0));

@@ -1,6 +1,6 @@
 # 천년제 부스 To-Do (Dec 29)
 
-Nov 15, 2026 · @SW · fourth revision, after the second run in Unity
+Nov 16, 2026 · @SW · fifth revision
 
 ## Where we are
 
@@ -10,7 +10,7 @@ The first version opened and ran in Unity on Nov 15 (@SW: "works well"). A secon
 | --- | --- | --- |
 | Midtown as 6,899 box buildings in a 170 KB file | Runs | Opened in Unity by @SW |
 | City drawing, first-person swing, mouse input, rings, timer, HUD | Runs | Opened in Unity by @SW; feel and frame rate not yet reported |
-| Game rules: collision, swing, aim help, route, race, leaderboard, sound synthesis, eye smoothing | Written | 44 automated tests pass outside Unity |
+| Game rules: collision, swing, aim help, route, race, leaderboard, sound synthesis, eye smoothing | Written | 51 automated tests pass outside Unity |
 | Draft route: 10 rings, 2.8 km, 6th Avenue → 57th Street → Park Avenue | Written | Every ring is in open air; not yet reported as playable |
 | Booth turn: type a name, countdown, run, result, next player | Runs | @SW: the name screen works |
 | Leaderboard saved to a file, with a reset that keeps the old file | Written | Rules tested; file and screen not run |
@@ -18,6 +18,7 @@ The first version opened and ran in Unity on Nov 15 (@SW: "works well"). A secon
 | Head tracking with an on/off switch and a setup panel | Runs | @SW: works with a webcam, not clearly smooth |
 | Third batch: sharp HUD text, swing help, tuning panel (F3), extra head-tracking smoothing, recording, turning by head | Written | Compiles; tests and simulation only; not run |
 | Wrist device firmware for the XIAO ESP32-C3 | Starting point | Not compiled, no device |
+| Fourth batch: back to the last ring (Backspace), 5-minute time limit, ring flash with split time, booth mode, optional zip style and view that follows travel | Written | Compiles; rules tested; not run |
 | Hands, music, 1v1, spectator screen | Not started | |
 
 The goal has not changed: a two-part booth on **Dec 29, 09:00 to 12:00**. 1부 (09:00 to 10:30) is a ring race for one player. 2부 (10:30 to 12:00) is a 1v1 duel on two laptops. The game is a head-tracked window into Manhattan where you swing on webs, aimed with a wrist device.
@@ -118,7 +119,10 @@ If a date slips, cut stretch tasks first, then simplify the duel. The Dec 20 fre
 | Play the route and move the rings until a new player finishes in about 3 minutes | Nov 29 | Not started | Press P in the game to log a ring line for the route file. |
 | Booth turn: name entry, countdown, run, result, next player | Nov 15 | Written, not run | Enter starts; after the finish R runs again and Enter is the next player. |
 | Leaderboard for 1부, saved to a local file after every run, with a reset | Nov 15 | Written, not run | The top 10 show on the start and result screens. Reset is in the setup panel (F2) and keeps the old file under a new name. |
-| Time a full turn with outside players and fit it into 4 minutes | Dec 6 | Not started | Includes sitting down, the face capture and the name. |
+| Stuck or lost players: Backspace returns to the last ring; leaving the city does it automatically | Nov 16 | Written, not run | The automatic test pilots found gaps between buildings where a beginner can get stuck. |
+| Time limit: a run ends as "time up" after 5 minutes | Nov 16 | Written, not run | Keeps the queue moving. Timed-out runs do not go on the leaderboard. |
+| Booth mode (F2): players cannot restart or rerun; staff use Ctrl+R and Enter | Nov 16 | Written, not run | Also switches off the tuning panel and the route key. |
+| Time a full turn with outside players and fit it into 4 minutes | Dec 6 | Not started | Includes sitting down, the face capture and the name. Then set the time limit to match. |
 | Korean names on the name screen | Dec 6 | Not started | Typing Hangul into the name box is untested. |
 | Leaderboard for 2부 | Dec 13 | Not started | Same file code with a different name; needs the duel's scoring first. |
 | Head-dodge obstacles (pigeons, a helicopter) | Dec 13 | Not started | Stretch. The tracked eye position is the hit test. |
@@ -146,7 +150,8 @@ The ESP32 appears to Windows as a Bluetooth gamepad, as the hardware owner propo
 | Wire the flex sensor and set its thresholds; bent finger holds, straight finger lets go | Nov 29 | Not started | Replaces the infrared sensor, which could only fire once. |
 | Check the reticle directions and ranges with a real device | Nov 29 | Not started | Flip `InvertYaw` / `InvertPitch` and set the ranges in `WristDevice.cs`. |
 | Measure aim drift over 3 minutes and choose MPU-6050 or BNO085 | Nov 29 | Not started | The game recentres at every countdown; if drift stays small within one run, skip the new sensor. |
-| Decide how the view turns when playing with the device only | Nov 29 | Not started | Written now: pointing near the screen edge turns the view. Needs a playtest. |
+| Decide how the view turns when playing with the device only | Nov 29 | Not started | Three options exist to try: pointing near the screen edge, the view following the direction of travel (F3), and turning the head (F2). |
+| Decide the swing style for the device: swing (default) or zip (F3) | Nov 29 | Not started | Zip pulls you to the web while you hold. The old repository is developing a similar one-button "grip" mode. |
 | Bluetooth soak test: 2 devices and 2 laptops side by side for 30 minutes, with phones nearby | Dec 6 | Not started | A festival room is full of phones. If it is unreliable, decide on a cable fallback now. |
 | Build 3 devices with straps and batteries; optional vibration; wiring written down | Dec 13 | Not started | Two for the duel and one spare. |
 
@@ -158,7 +163,8 @@ The ESP32 appears to Windows as a Bluetooth gamepad, as the hardware owner propo
 | Listen to the placeholders; replace the weak ones with recorded sounds | Dec 6 | Not started | Each sound is one line in `GameAudio.cs`. |
 | Simple first-person hands with a firing pose | Dec 6 | Not started | The club agreed simple rounded hands look better than half-finished detail. Keep the character simple for v1. |
 | One music loop with a clear licence | Dec 6 | Not started | |
-| Ring pass flash, finish and result screen effects | Dec 13 | Not started | Clear feedback is what makes players ask for another run. |
+| Ring pass flash with the time at that ring | Nov 16 | Written, not run | |
+| Finish and result screen effects | Dec 13 | Not started | Clear feedback is what makes players ask for another run. |
 
 ### Spectator screen and release
 

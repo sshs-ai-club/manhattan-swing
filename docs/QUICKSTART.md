@@ -34,12 +34,13 @@ Type a name and press **Enter** to start. After the finish, **R** runs again and
 | Right mouse or E | Reel in |
 | W A S D | Run on roofs and the ground; steer in the air |
 | Space | Jump |
-| R | Restart the run |
+| R | Restart the run (Ctrl+R in booth mode) |
+| Backspace | Back to the last ring you passed, if you are lost or stuck |
 | C | Recentre the wrist device |
 | H | Head tracking on or off |
 | K | Capture the face reference for head tracking |
-| F2 | Setup panel: head tracking, monitor size, leaderboard reset |
-| F3 | Tuning panel: sliders for the swing and mouse sensitivity |
+| F2 | Setup panel: head tracking, monitor size, booth mode, leaderboard reset |
+| F3 | Tuning panel: sliders for the swing, mouse sensitivity, zip style, view follows travel |
 | P | Log your position as a `ring` line, for making routes |
 | Esc | Free the mouse |
 
@@ -47,7 +48,9 @@ A gamepad, if one is connected, moves the reticle with its left stick and holds 
 
 ## 4. Run the tests
 
-**Window → General → Test Runner → EditMode → Run All.** There are 44 tests of the game rules.
+**Window → General → Test Runner → EditMode → Run All.** There are 51 tests of the game rules.
+
+A run ends as "time up" after 5 minutes (`TimeLimitSeconds` in `Race.cs`).
 
 ## When something is wrong
 

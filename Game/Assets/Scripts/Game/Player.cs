@@ -16,6 +16,8 @@ namespace Swing.Game
         /// </summary>
         public float EdgeTurnStart = 0.3f;
         public float EdgeTurnDegreesPerSecond = 90f;
+        /// <summary>After the player turns the view themselves, the view waits this long before following travel again.</summary>
+        public float FollowWaitSeconds = 0.8f;
 
         public readonly SwingBody Body;
         private readonly CityCollision city;
@@ -24,6 +26,7 @@ namespace Swing.Game
         private readonly LineRenderer webLine;
 
         private float yaw, pitch;   // view direction in degrees; pitch is positive looking up
+        private float sinceManualTurn = 100f;
 
         /// <summary>True when holding now would catch a building. The HUD fills the reticle.</summary>
         public bool CanAttach { get; private set; }
@@ -49,18 +52,19 @@ namespace Swing.Game
             webLine.enabled = false;
         }
 
-        public void PlaceAt(Num.Vector3 position, float yawDegrees)
+        public void PlaceAt(Num.Vector3 position, float yawDegrees, Num.Vector3 velocity = default(Num.Vector3))
         {
             Body.Teleport(position);
+            Body.Velocity = velocity;
             yaw = yawDegrees;
             pitch = 0;
             ApplyToEyes();
         }
 
         /// <summary>One frame. When <paramref name="frozen"/> the player can look and aim but not move.</summary>
-        public void Tick(float deltaTime, PlayerInput input, bool frozen)
+        public void Tick(float deltaTime, PlayerInput input, bool frozen, bool followTravel)
         {
-            Turn(deltaTime, input);
+            Turn(deltaTime, input, followTravel && !frozen);
             ApplyToEyes();   // the aim ray below needs the new view direction
 
             Ray aim = camera.ViewportPointToRay(new Vector3(input.Aim.x, input.Aim.y, 0));
@@ -94,10 +98,15 @@ namespace Swing.Game
             DrawWeb();
         }
 
-        private void Turn(float deltaTime, PlayerInput input)
+        private void Turn(float deltaTime, PlayerInput input, bool followTravel)
         {
             yaw += input.Look.x;
             pitch = Mathf.Clamp(pitch + input.Look.y, -85f, 85f);
+
+            // The player's own turning always wins; following only resumes after a short wait.
+            sinceManualTurn = input.Look.sqrMagnitude > 1e-6f ? 0 : sinceManualTurn + deltaTime;
+            if (followTravel && sinceManualTurn >= FollowWaitSeconds)
+                yaw += ViewFollow.YawStep(yaw, Body.Velocity, deltaTime);
 
             if (input.Wrist.Connected)
             {

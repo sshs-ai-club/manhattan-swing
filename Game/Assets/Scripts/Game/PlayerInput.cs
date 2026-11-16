@@ -34,6 +34,8 @@ namespace Swing.Game
 
         // Keys that act once when pressed.
         public bool RestartPressed;         // R
+        public bool CheckpointPressed;      // Backspace: back to the last ring
+        public bool CtrlHeld;               // Ctrl, held with R in booth mode
         public bool EnterPressed;           // Enter
         public bool ClickPressed;           // left mouse button
         public bool CancelPressed;          // Esc
@@ -60,6 +62,7 @@ namespace Swing.Game
             Move = Vector2.zero;
             Hold = Reel = Jump = false;
             RestartPressed = EnterPressed = ClickPressed = CancelPressed = RecentrePressed = false;
+            CheckpointPressed = CtrlHeld = false;
             TrackingPressed = CaptureFacePressed = SetupPressed = TuningPressed = ResetBoardPressed = MarkPressed = false;
 
             if (mouse != null)
@@ -85,6 +88,8 @@ namespace Swing.Game
                     Reel |= keyboard.eKey.isPressed;
                     Jump = keyboard.spaceKey.wasPressedThisFrame;
                     RestartPressed = keyboard.rKey.wasPressedThisFrame;
+                    CheckpointPressed = keyboard.backspaceKey.wasPressedThisFrame;
+                    CtrlHeld = keyboard.ctrlKey.isPressed;
                     RecentrePressed = keyboard.cKey.wasPressedThisFrame;
                     TrackingPressed = keyboard.hKey.wasPressedThisFrame;
                     CaptureFacePressed = keyboard.kKey.wasPressedThisFrame;

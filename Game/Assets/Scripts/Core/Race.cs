@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Swing.Core
 {
-    public enum RaceState { Waiting, Countdown, Running, Finished }
+    public enum RaceState { Waiting, Countdown, Running, Finished, TimedOut }
 
     /// <summary>
     /// The rules of one timed run: a countdown, rings passed in order, and a clock that stops at the
@@ -14,6 +14,15 @@ namespace Swing.Core
         public const float CountdownSeconds = 3f;
         /// <summary>Extra metres around a ring that still count, so a near miss is not punished.</summary>
         public const float Forgiveness = 1.5f;
+
+        /// <summary>
+        /// A run that takes longer than this many seconds ends as "time up", so one player cannot
+        /// hold up the queue. 0 means no limit.
+        /// </summary>
+        public float TimeLimitSeconds = 300f;
+
+        /// <summary>A player sent back to a checkpoint starts moving at this speed (m/s), so they do not just drop.</summary>
+        public const float CheckpointSpeed = 18f;
 
         public readonly Route Route;
         public RaceState State { get; private set; }
@@ -64,12 +73,37 @@ namespace Swing.Core
             if (State != RaceState.Running) return false;
 
             Time += deltaTime;
+            if (TimeLimitSeconds > 0 && Time >= TimeLimitSeconds)
+            {
+                Time = TimeLimitSeconds;
+                State = RaceState.TimedOut;
+                return false;
+            }
             if (!Crosses(Route.Rings[NextRing], previousPosition, position)) return false;
 
             Splits.Add(Time);
             NextRing++;
             if (NextRing >= Route.Rings.Length) State = RaceState.Finished;
             return true;
+        }
+
+        /// <summary>
+        /// Where to put a player who is lost or stuck: the last ring they passed, facing along the
+        /// route, or the start if they have passed none. The clock keeps running.
+        /// </summary>
+        public void Checkpoint(out Vector3 position, out float yawDegrees, out Vector3 velocity)
+        {
+            if (NextRing == 0)
+            {
+                position = Route.Start;
+                yawDegrees = Route.StartYawDegrees;
+                velocity = Vector3.Zero;
+                return;
+            }
+            RouteRing ring = Route.Rings[NextRing - 1];
+            position = ring.Centre;
+            yawDegrees = (float)(System.Math.Atan2(ring.Facing.X, ring.Facing.Z) * 180 / System.Math.PI);
+            velocity = ring.Facing * CheckpointSpeed;
         }
 
         /// <summary>True when the straight move from a to b goes through the ring's disc.</summary>

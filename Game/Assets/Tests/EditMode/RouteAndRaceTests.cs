@@ -87,6 +87,37 @@ namespace Swing.Core.Tests
         }
 
         [Test]
+        public void ARunThatTakesTooLongEndsAsTimeUp()
+        {
+            var race = new Race(Route.Parse(TwoRings)) { TimeLimitSeconds = 10 };
+            race.StartCountdown();
+            race.Update(5f, Vector3.Zero, Vector3.Zero);
+            for (int i = 0; i < 12; i++) race.Update(1f, Vector3.Zero, Vector3.Zero);
+            Assert.AreEqual(RaceState.TimedOut, race.State);
+            Assert.AreEqual(10f, race.Time, 0.001f);
+            Assert.IsFalse(race.Update(0.1f, new Vector3(0, 10, 99), new Vector3(0, 10, 101)), "rings no longer count");
+        }
+
+        [Test]
+        public void TheCheckpointIsTheStartThenTheLastRingPassed()
+        {
+            var race = new Race(Route.Parse(TwoRings));
+            race.StartCountdown();
+            race.Update(5f, Vector3.Zero, Vector3.Zero);
+            Vector3 position, velocity; float yaw;
+            race.Checkpoint(out position, out yaw, out velocity);
+            Assert.AreEqual(new Vector3(0, 10, 0), position);
+            Assert.AreEqual(90f, yaw);
+            Assert.AreEqual(Vector3.Zero, velocity);
+
+            race.Update(0.1f, new Vector3(0, 10, 99), new Vector3(0, 10, 101));
+            race.Checkpoint(out position, out yaw, out velocity);
+            Assert.AreEqual(new Vector3(0, 10, 100), position);
+            Assert.AreEqual(0f, yaw, 0.01f, "facing along the route, towards +Z");
+            Assert.AreEqual(Race.CheckpointSpeed, velocity.Z, 0.01f);
+        }
+
+        [Test]
         public void TheSecondRingDoesNotCountBeforeTheFirst()
         {
             var race = new Race(Route.Parse(TwoRings));

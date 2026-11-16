@@ -107,7 +107,7 @@ namespace Swing.Core
 
             Position += Velocity * h;
 
-            if (Attached) ApplyWeb(h, input.Reel || (Settings.AutoReelOnGround && Grounded));
+            if (Attached) ApplyWeb(h, input.Reel || Settings.HoldReels || (Settings.AutoReelOnGround && Grounded));
             Collide();
         }
 
