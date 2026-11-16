@@ -18,7 +18,7 @@ per layer: uint32 kind (0 land, 1 park)
            uint32 indexCount,  indexCount x uint32
 ```
 
-All numbers are little-endian. The reader in the game is `Game/Assets/Scripts/Core/CityData.cs`.
+All numbers are little-endian. The reader in the game is `Game/Packages/com.sshs.manhattan-swing/Runtime/Core/CityData.cs`.
 
 ## Rebuilding the file
 

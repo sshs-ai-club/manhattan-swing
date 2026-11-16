@@ -1,0 +1,18 @@
+{
+    "name": "ManhattanSwing.TestMap",
+    "rootNamespace": "ManhattanSwing.TestMap",
+    "references": [
+        "ManhattanSwing.Core",
+        "ManhattanSwing.Game",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -8,8 +8,10 @@ Read [docs/PLAN.md](docs/PLAN.md) and [docs/DECISIONS.md](docs/DECISIONS.md) bef
 - Game before graphics: do not add detail to the city until the task you are on needs it.
 - The mouse always works. Head tracking and the wrist device can each be turned off.
 - No streaming, no bake step, no large downloads. If a feature needs one, it needs a decision first.
-- Port from the old repository one piece at a time, for a task that needs it. Do not copy folders across.
-- Game rules live in `Game/Assets/Scripts/Core` and use no Unity types, so they can be tested without Unity. Keep it that way, and add a test with every rule you add.
+- Gameplay goes in the package `Game/Packages/com.sshs.manhattan-swing`; the original repository uses it from there (see [docs/PORTING.md](docs/PORTING.md)). Nothing in the package may depend on a particular map: the city is reached only through `ISwingWorld`. The light map and its start-up stay in `Game/Assets`.
+- Game rules live in the package's `Runtime/Core` and use no Unity types, so they can be tested without Unity. Keep it that way, and add a test with every rule you add.
+- The package must work in both the built-in pipeline (here) and URP (the original repository), with the Input System only.
+- Do not copy folders from the original repository. Take one piece at a time, for a task that needs it.
 - The Unity scene stays empty. Create things from code so two people never edit the same scene file.
 - Use Unity 6000.3.22f1 exactly.
 

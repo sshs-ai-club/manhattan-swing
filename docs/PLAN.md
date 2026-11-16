@@ -1,8 +1,10 @@
 # 천년제 부스 To-Do (Dec 29)
 
-Nov 16, 2026 · @SW · fifth revision
+Nov 16, 2026 · @SW · sixth revision
 
 ## Where we are
+
+**Change of plan (Nov 16):** which repository is final is not decided. A teammate keeps developing the original repository with the detailed city. This repository is the place to build and test gameplay on a light map; when a piece plays well, it moves to the original repository and is tested on the detailed city. To make that cheap, the gameplay is now one Unity package that the original repository can add with one line. See [PORTING](PORTING.md).
 
 The first version opened and ran in Unity on Nov 15 (@SW: "works well"). A second batch was added the same day and has **not been run in Unity yet**: name entry, leaderboard, sounds and head tracking. Code is written without a Unity Editor, so each batch needs someone to press Play and report what is wrong.
 
@@ -10,7 +12,7 @@ The first version opened and ran in Unity on Nov 15 (@SW: "works well"). A secon
 | --- | --- | --- |
 | Midtown as 6,899 box buildings in a 170 KB file | Runs | Opened in Unity by @SW |
 | City drawing, first-person swing, mouse input, rings, timer, HUD | Runs | Opened in Unity by @SW; feel and frame rate not yet reported |
-| Game rules: collision, swing, aim help, route, race, leaderboard, sound synthesis, eye smoothing | Written | 51 automated tests pass outside Unity |
+| Game rules: collision, swing, aim help, route, race, leaderboard, sound synthesis, eye smoothing | Written | 59 automated tests pass outside Unity |
 | Draft route: 10 rings, 2.8 km, 6th Avenue → 57th Street → Park Avenue | Written | Every ring is in open air; not yet reported as playable |
 | Booth turn: type a name, countdown, run, result, next player | Runs | @SW: the name screen works |
 | Leaderboard saved to a file, with a reset that keeps the old file | Written | Rules tested; file and screen not run |
@@ -19,6 +21,8 @@ The first version opened and ran in Unity on Nov 15 (@SW: "works well"). A secon
 | Third batch: sharp HUD text, swing help, tuning panel (F3), extra head-tracking smoothing, recording, turning by head | Written | Compiles; tests and simulation only; not run |
 | Wrist device firmware for the XIAO ESP32-C3 | Starting point | Not compiled, no device |
 | Fourth batch: back to the last ring (Backspace), 5-minute time limit, ring flash with split time, booth mode, optional zip style and view that follows travel | Written | Compiles; rules tested; not run |
+| Fifth batch: gameplay moved into a package; the game reaches the city only through `ISwingWorld`; Unity-physics collision (`PhysicsWorld`, F4 on the test map); route coordinate frame; floating-origin support | Written | Compiles; rules tested, including on a made-up second map; not run |
+| The package added to the original repository | Not started | Needs someone who works on the original repository |
 | Hands, music, 1v1, spectator screen | Not started | |
 
 The goal has not changed: a two-part booth on **Dec 29, 09:00 to 12:00**. 1부 (09:00 to 10:30) is a ring race for one player. 2부 (10:30 to 12:00) is a 1v1 duel on two laptops. The game is a head-tracked window into Manhattan where you swing on webs, aimed with a wrist device.
@@ -56,13 +60,18 @@ The whole island would be the ideal, and the same tool can already produce it (4
 
 | Piece | Files it owns | First step |
 | --- | --- | --- |
-| First run and swing feel | `Scripts/Core/SwingSettings.cs`, `SwingBody.cs`, `Scripts/Game/Player.cs` | Open the project, press Play, list what is broken |
-| Head tracking | `Scripts/HeadTracking/`, `Packages/com.headtracked.display/` | Run it with a webcam and fix what is wrong; see [HEAD-TRACKING](HEAD-TRACKING.md) |
-| Wrist device | `hardware/`, `Scripts/Game/WristDevice.cs` | Flash one board and see it in Windows as a controller |
-| Race flow and leaderboard | `Scripts/Core/Race.cs`, `Leaderboard.cs`, `Scripts/Game/Hud.cs`, `SwingGame.cs` | Play a full turn from name to next player and fix what is awkward |
-| Routes | `Resources/route_*.txt` | Play the draft route and move the rings |
-| 1v1 | a new `Scripts/Net/` folder | Send one laptop's position to the other |
-| Look and sound | `Scripts/Game/CityView.cs`, `Resources/Shaders/`, `Scripts/Core/SoundSynth.cs`, `Scripts/Game/GameAudio.cs` | Listen to the placeholder sounds and replace the weak ones |
+Paths below are inside `Game/Packages/com.sshs.manhattan-swing/` (the package) unless they start with `Assets/` (the test map) or another top folder.
+
+| Piece | Files it owns | First step |
+| --- | --- | --- |
+| First run and swing feel | `Runtime/Core/SwingSettings.cs`, `SwingBody.cs`, `Runtime/Game/Player.cs` | Open the project, press Play, list what is broken |
+| Head tracking | `Runtime/HeadTracking/`, `Game/Packages/com.headtracked.display/` | Run it with a webcam and fix what is wrong; see [HEAD-TRACKING](HEAD-TRACKING.md) |
+| Wrist device | `hardware/`, `Runtime/Game/WristDevice.cs` | Flash one board and see it in Windows as a controller |
+| Race flow and leaderboard | `Runtime/Core/Race.cs`, `Leaderboard.cs`, `Runtime/Game/Hud.cs`, `SwingGame.cs` | Play a full turn from name to next player and fix what is awkward |
+| Routes | `Assets/Resources/route_*.txt` | Play the draft route and move the rings |
+| 1v1 | a new `Runtime/Net/` folder | Send one laptop's position to the other |
+| Sound | `Runtime/Core/SoundSynth.cs`, `Runtime/Game/GameAudio.cs` | Listen to the placeholder sounds and replace the weak ones |
+| The detailed city | the original repository, plus `Runtime/Game/PhysicsWorld.cs` here | Follow [PORTING](PORTING.md): add the package and start it on the detailed city |
 | Booth | no code | Webcams, room, equipment |
 
 Owners are not assigned yet. That is deliberately left until the first run works.
@@ -75,7 +84,7 @@ Owners are not assigned yet. That is deliberately left until the first run works
 | M2 | Sun Nov 29 | **The race is fun** | Swing tuned from playtests, route adjusted, window effect on, the wrist device aims and holds the web, basic sounds |
 | M3 | Sun Dec 6 | **Booth flow and two laptops** | Name to result in one 4-minute slot, leaderboard, two laptops see each other, hands in |
 | M4 | Sun Dec 13 | **Feature complete** | Duel rules, 3 devices, spectator screen, 60 fps on the booth laptops |
-| | Tue Dec 15 | **Duel check** | Two outside players finish a duel without help. If not, the rules are cut down, not the date |
+| | Tue Dec 15 | **Duel check and booth repository** | Two outside players finish a duel without help. If not, the rules are cut down, not the date. The same day, choose which repository the booth runs: the detailed city only if it holds 60 fps on the booth laptops |
 | M5 | Sun Dec 20 | **Code freeze** | Booth release on all three laptops, comfort playtest done. Only crash fixes after this |
 | M6 | Tue Dec 29 | **Booth day** | Rehearsal Dec 22 to 23, day-of checklist Dec 27, booth 09:00 to 12:00 |
 
@@ -96,8 +105,23 @@ If a date slips, cut stretch tasks first, then simplify the duel. The Dec 20 fre
 | Compare smoothing on and off with a webcam; record 20 seconds and tune against the real data | Nov 29 | Not started | The simulation assumes the tracker's delay and wobble. |
 | Try turning the view by turning the head | Nov 29 | Not started | Off by default. The old project removed a similar feature. |
 | Measure the frame rate with the tracker running | Nov 29 | Not started | |
-| Make it read as Manhattan: stepped tops for the tallest towers, a few landmark shapes, street markings | Dec 6 | Not started | Only after the race is fun. Each addition is measured against the budget. |
-| Widen the city beyond Midtown | After the booth | Not started | Stretch. One command (`--area all`). |
+| Make the box city read as Manhattan | | Dropped | The detailed city in the original repository is where the city looks real. The test map stays plain boxes. |
+| Widen the city beyond Midtown | | Dropped | Same reason. Still one command (`--area all`) if the test map needs it. |
+
+### Moving to the original repository
+
+How each step is done is in [PORTING](PORTING.md).
+
+| Task | Due | Status | Why and details |
+| --- | --- | --- | --- |
+| Gameplay as one package; the city reached only through `ISwingWorld` | Nov 16 | Written, not run | Tested on the test map's boxes and on a made-up second map. |
+| Unity-physics collision (`PhysicsWorld`); F4 on the test map switches to it | Nov 16 | Written, not run | The detailed city will use it. Both kinds should feel the same on the test map. |
+| Route coordinate frame and floating-origin support | Nov 16 | Written, not run | Rules tested. |
+| Press F4 on the test map and compare the two kinds of collision | Nov 22 | Not started | First run of `PhysicsWorld`. |
+| Add the package to the original repository and start it on the detailed city | Nov 29 | Not started | Needs the teammate on the original repository. Pin a commit. |
+| Measure the coordinate frame and hook up origin shifts there | Nov 29 | Not started | Open question Q11. |
+| Frame rate of the game on the detailed city on the booth laptops | Dec 6 | Not started | Decides Q10, which repository the booth runs. |
+| Decide which swing the booth uses | Dec 6 | Not started | Open question Q9. |
 
 ### Swing
 
@@ -108,7 +132,7 @@ If a date slips, cut stretch tasks first, then simplify the duel. The Dec 20 fre
 | Swing help: webs shorten to clear the street, swings slowly gain height, a small boost for letting go on the way up | Nov 15 | Written, not run | A group of crude automatic pilots flies the route as a test. With the plain physics one passed 2 of 10 rings; now 7 of 9 finish, in 3 to 4.5 minutes. |
 | Tune the swing with the F3 sliders and write the good values into `SwingSettings.cs` | Nov 22 | Not started | @SW: the swing and controls need improvement. What exactly feels wrong is not recorded yet. |
 | Outside playtests, then freeze the tuning | Dec 13 | Not started | Tuning that changes after this invalidates route times and the comfort test. |
-| Advanced moves from the old project (wall run, rope wrap, two-hand launch) | Dec 13 | Not started | Stretch. Only if the race is already fun without them. |
+| Advanced moves from the original repository (wall run, rope wrap, two-hand launch) | Dec 13 | Not started | Stretch. Only if the race is already fun without them. |
 
 ### 1부 race mode
 
@@ -132,7 +156,7 @@ If a date slips, cut stretch tasks first, then simplify the duel. The Dec 20 fre
 
 | Task | Due | Status | Why and details |
 | --- | --- | --- | --- |
-| Position sync between the two laptops over LAN | Dec 6 | Not started | UDP, 20 to 30 updates a second. Both laptops load the same city file, so positions are sent as they are. |
+| Position sync between the two laptops over LAN | Dec 6 | Not started | UDP, 20 to 30 updates a second. Send positions in route coordinates (see [PORTING](PORTING.md)) so it also works with a floating origin. |
 | Opponent avatar and their web line | Dec 6 | Not started | A simple shape is enough for v1. |
 | Duel rules: web pulls the opponent, rooftop capture points, 3 rounds of 90 seconds | Dec 13 | Not started | One button: aiming at a building swings, aiming at the opponent pulls them. One laptop decides hits and score. |
 | Duel check with two outside players | Dec 15 | Not started | If they cannot finish a duel unaided, cut rules until they can. |
@@ -201,6 +225,8 @@ The ESP32 appears to Windows as a Bluetooth gamepad, as the hardware owner propo
 
 | Risk | What to do |
 | --- | --- |
+| The detailed city is still too heavy with the game in it | Measure by Dec 6. Choose the booth repository on Dec 15; the light map here is the fallback. |
+| The two repositories drift apart again | Gameplay changes go into the package here; the original repository only pins a newer commit. Map-specific code stays out of the package. |
 | Code written without Unity breaks when first run | Each batch is run by a person before more is built on it. The first batch ran; the second has not. |
 | Six weeks to the booth | Hold the order: runs, fun, flow, duel, looks. A 30-minute check-in every Sunday where each person reports what merged. |
 | The city gets heavy again | The weight budget is checked in every pull request and on the weakest laptop every Sunday. |

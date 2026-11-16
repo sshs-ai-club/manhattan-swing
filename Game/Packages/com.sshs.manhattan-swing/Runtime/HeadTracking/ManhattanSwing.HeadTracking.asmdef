@@ -1,0 +1,26 @@
+{
+    "name": "ManhattanSwing.HeadTracking",
+    "rootNamespace": "ManhattanSwing.HeadTracking",
+    "references": [
+        "ManhattanSwing.Core",
+        "ManhattanSwing.Game",
+        "HeadTracked.Display"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "SWING_HEAD_TRACKING"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.headtracked.display",
+            "expression": "",
+            "define": "SWING_HEAD_TRACKING"
+        }
+    ],
+    "noEngineReferences": false
+}

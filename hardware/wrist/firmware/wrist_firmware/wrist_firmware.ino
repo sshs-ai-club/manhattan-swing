@@ -5,7 +5,7 @@
 // Link:    Bluetooth Low Energy gamepad. Windows pairs it like any controller and the
 //          game reads it with no extra program.
 //
-// What the game receives (this must match Game/Assets/Scripts/Game/WristDevice.cs):
+// What the game receives (this must match Game/Packages/com.sshs.manhattan-swing/Runtime/Game/WristDevice.cs):
 //     X axis    yaw    -180..+180 degrees, sent as -32767..+32767
 //     Y axis    pitch   -90..+90  degrees, sent as -32767..+32767
 //     button 1  HOLD      down while the finger is bent

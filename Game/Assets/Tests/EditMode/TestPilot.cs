@@ -1,7 +1,8 @@
 using System;
 using System.Numerics;
+using ManhattanSwing.Core;
 
-namespace Swing.Core.Tests
+namespace ManhattanSwing.TestMap.Tests
 {
     /// <summary>
     /// A crude automatic player used only by tests. It heads for the next ring, fires a web at a
@@ -20,7 +21,7 @@ namespace Swing.Core.Tests
         public Vector3 LastPosition;
 
         /// <param name="releaseDegrees">How far past the bottom of a swing the pilot lets go. Vary it to fly different lines.</param>
-        public static TestPilot Fly(CityCollision city, Route route, SwingSettings settings, float timeLimitSeconds, float releaseDegrees)
+        public static TestPilot Fly(ISwingWorld city, Route route, SwingSettings settings, float timeLimitSeconds, float releaseDegrees)
         {
             var pilot = new TestPilot();
             var body = new SwingBody(city, settings);
@@ -69,7 +70,7 @@ namespace Swing.Core.Tests
             return pilot;
         }
 
-        private static bool ChooseAnchor(CityCollision city, Vector3 from, Vector3 flat, float flatDistance, bool slow, out Vector3 anchor)
+        private static bool ChooseAnchor(ISwingWorld city, Vector3 from, Vector3 flat, float flatDistance, bool slow, out Vector3 anchor)
         {
             anchor = Vector3.Zero;
             float best = float.NegativeInfinity;
@@ -83,7 +84,7 @@ namespace Swing.Core.Tests
                 if (yaw == 0) continue;
                 Vector3 level = flat * (float)Math.Cos(Radians(yaw)) + side * (float)Math.Sin(Radians(yaw));
                 Vector3 aim = Vector3.Normalize(level * (float)Math.Cos(Radians(pitch)) + Vector3.UnitY * (float)Math.Sin(Radians(pitch)));
-                if (!city.Raycast(from, aim, 150, out hit) || hit.BoxIndex < 0 || hit.Distance < 20) continue;
+                if (!city.Raycast(from, aim, 150, out hit) || !hit.CanHold || hit.Distance < 20) continue;
                 Vector3 offset = hit.Point - from;
                 float forward = Vector3.Dot(offset, flat), sideways = Math.Abs(Vector3.Dot(offset, side));
                 if (offset.Y < 12 || forward < 10 || forward > flatDistance + 30) continue;
@@ -100,7 +101,7 @@ namespace Swing.Core.Tests
             {
                 var level = new Vector3((float)Math.Cos(k * Math.PI / 6), 0, (float)Math.Sin(k * Math.PI / 6));
                 Vector3 aim = Vector3.Normalize(level * (float)Math.Cos(Radians(pitch)) + Vector3.UnitY * (float)Math.Sin(Radians(pitch)));
-                if (!city.Raycast(from, aim, 150, out hit) || hit.BoxIndex < 0 || hit.Distance < 6) continue;
+                if (!city.Raycast(from, aim, 150, out hit) || !hit.CanHold || hit.Distance < 6) continue;
                 if (hit.Point.Y > best) { best = hit.Point.Y; anchor = hit.Point; }
             }
             return best > float.NegativeInfinity;

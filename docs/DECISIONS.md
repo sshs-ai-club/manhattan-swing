@@ -10,7 +10,7 @@ Decided by @SW on Nov 15, 2026, unless another name is given.
 | --- | --- |
 | S1 | The booth is two parts on Dec 29: 1부 race 09:00 to 10:30, 2부 duel 10:30 to 12:00. The application has passed. |
 | S2 | The game is a head-tracked monitor game set in Manhattan, in the style of Spider-Man web swinging. |
-| S3 | This repository starts from scratch and is the final one. The old repository is reference only. |
+| S3 | ~~This repository is the final one.~~ Replaced by S20 on Nov 16. |
 | S4 | The old project was too heavy: low frame rates at home, and a setup whose "bake" step alone took over 2 hours. The new one must stay light. |
 | S5 | Unity stays the engine. |
 | S6 | The city does not need to be all of Manhattan now. Start small; the whole island is the eventual ideal. |
@@ -27,6 +27,7 @@ Decided by @SW on Nov 15, 2026, unless another name is given.
 | S17 | A duel is three rounds of 90 seconds, for now. |
 | S18 | In 1부 both laptops run the race. |
 | S19 | The room is 외국어 강의실 4, with two player seats (A and B), a queue area and the 전자칠판. |
+| S20 | (Nov 16) Which repository is final is **not decided**. A teammate keeps developing the original repository. This repository is where gameplay is built and tested on a light map; when a piece plays well, it moves to the original repository and is tested on the detailed city. How: [PORTING](PORTING.md). |
 
 ## Choices made while building
 
@@ -37,7 +38,7 @@ These were made to get a first version written. Each can be changed; say so befo
 | C1 | Unity **6000.3.22f1**, the same version as the old project. | It is the Unity 6.3 long-term-support line, the head-tracking package was made for it, and some members already have it. Every laptop must use the same version anyway, and Unity Hub installs the exact one the project asks for. | Which version Unity Hub offers first to a new user today was not checked. |
 | C2 | The city is Midtown only: 6,899 box buildings between about 29th Street and the bottom of Central Park. | Enough to race in, quick to load and test. | Flying past the edge shows empty land. `--area all` gives the whole island. |
 | C3 | One scene, plain coordinates, no streaming. In plain words: the whole city is loaded once when the game starts, and a position is just three numbers in metres that mean the same thing on every laptop. The old project loaded and unloaded pieces of the city as you moved and kept shifting its coordinates to stay precise. | The small city makes that machinery unnecessary. It also makes the duel simpler, because both laptops agree on where everything is. | A much larger or more detailed city would need streaming again. |
-| C4 | The game rules (collision, swing, race) are plain C# with no Unity types, in `Scripts/Core`. | They can be tested without opening Unity, which is how this version was checked. | Positions are converted between two vector types at the edge. |
+| C4 | The game rules (collision, swing, race) are plain C# with no Unity types, in `Runtime/Core` of the package. | They can be tested without opening Unity, which is how this version was checked. | Positions are converted between two vector types at the edge. |
 | C5 | Collision is our own code against the boxes. Unity's physics engine is not used. | No object per building, the same result on every laptop, and fast. | Anything that should collide must be added to this code. |
 | C6 | Unity's built-in render pipeline with one simple shader: no lights, shadows or textures. | The lightest option, and nothing to configure. | Fancier effects later may mean moving to URP. The shader was written to work there too, but that is not tested. |
 | C7 | The scene file is empty; the game builds itself from code when Play starts. | Two people never edit the same scene file. | Things are placed in code, not by dragging in the editor. |
@@ -54,6 +55,10 @@ These were made to get a first version written. Each can be changed; say so befo
 | C14 | Head tracking is compiled separately and only when the package is present; it starts switched off. | The game must run without a webcam or the package. | One extra small interface (`IHeadTracking`). |
 | C15 | Sound effects are made from maths at start-up, not from audio files. | No downloads, no licences, and they could be tested here. | They are plain; replace them with recordings when someone has better ones. |
 | C16 | The leaderboard is a text file in Unity's per-user data folder on each laptop, written after every run. Reset renames the old file. | Survives a crash; a reset by mistake can be undone. | Two laptops keep two files (see Q7). |
+| C22 | (Nov 16) The gameplay is a Unity package inside this repository, `Game/Packages/com.sshs.manhattan-swing`. The light map stays outside it, in `Game/Assets`. | The original repository adds the package with one line in its manifest, pinned to a commit, the same way it adds the head-tracking package. Nothing is copied by hand. | Code must go in the right half: map-specific things never go in the package. |
+| C23 | (Nov 16) The game reaches the city only through `ISwingWorld` (ray, push out, street height, map edge). The box city answers it here; `PhysicsWorld` answers it with Unity colliders on the detailed city. | The same swing, aim help and race run on both maps. | `PhysicsWorld` is unproven until it runs; F4 on the test map switches to it for comparison. |
+| C24 | (Nov 16) Routes are written in the test map's coordinates and converted with a `WorldFrame` (origin and turn). The game follows a floating origin through `SwingGame.ShiftOrigin`. | Route files work on both maps; the detailed city keeps its moving origin. | Someone must measure the frame on the detailed city once. |
+| C25 | (Nov 16) Code namespaces and assemblies are named `ManhattanSwing.*`. | Avoids a clash with the original repository's `WebShooter.Swing` and `Manhattan.Viewer`. | Renamed once from `Swing.*`. |
 | C17 | After a finish, R runs again with the same name and Enter goes to the next player. | Fast retries while testing, a clean hand-over at the booth. | At the booth, staff may want R disabled so nobody takes two turns. |
 
 ## Open questions
@@ -68,4 +73,6 @@ These were made to get a first version written. Each can be changed; say so befo
 | Q6 | Who owns which piece of work? Deferred. | Issues and reviews. |
 | Q7 | In 1부 the two laptops keep separate leaderboards. Compare the top 3 by hand at 10:30, or send both to one file over the LAN? | Prizes. |
 | Q8 | Is 5 minutes the right time limit for a 4-minute slot? | Booth turn. |
-| Q9 | The old repository is still being developed (one-button grip swing, camera that follows travel, two-glove input). Should that work move here, and who decides? | Whether two versions of the swing keep diverging. |
+| Q9 | There are two swings: this one, and the original repository's (`WebShooter.Swing`, with a one-button grip mode in progress). Keep both selectable and pick by playtest, or choose one now? | What gets tuned, and which swing the booth uses. |
+| Q10 | By when must the booth repository be chosen? Suggested: Dec 15, at the duel check. If the detailed city is not at 60 fps on the booth laptops by then, the booth runs the light map here. | The code freeze on Dec 20. |
+| Q11 | How does the original repository report origin shifts (event name, direction), and what are its origin and grid direction relative to the Empire State Building? | Step 3 and 4 of [PORTING](PORTING.md). |

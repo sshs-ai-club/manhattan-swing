@@ -9,7 +9,7 @@ Status: **runs with a webcam** (@SW, Nov 15), but it was not clearly smooth. The
 | Part | Where | What it does |
 | --- | --- | --- |
 | Head Tracked Display package | `Game/Packages/com.headtracked.display/` | Moves the camera and skews its view from the eye position. A copy of [lollipop190000/head-tracked-display](https://github.com/lollipop190000/head-tracked-display) at commit `c5ddab1` (MIT licence, the version the old project used), kept in this repository so opening the project needs no extra download. |
-| Game glue | `Game/Assets/Scripts/HeadTracking/HeadTracking.cs` | Sets the package up for this game and stores the monitor's measurements on the laptop. |
+| Game glue | `Game/Packages/com.sshs.manhattan-swing/Runtime/HeadTracking/HeadTracking.cs` | Sets the package up for this game and stores the monitor's measurements on the laptop. |
 | Webcam tracker | A Python program in the head-tracked-display repository | Watches the webcam and sends the eye position to the game. It runs beside the game. |
 
 If the package folder is removed, the game still compiles and runs; the setup panel then says head tracking is not installed.

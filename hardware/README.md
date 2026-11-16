@@ -17,7 +17,7 @@ The ESP32 presents itself to Windows as a **Bluetooth gamepad**. Windows pairs i
 
 The game also recentres at every countdown and when **C** is pressed on the keyboard.
 
-The game decides how far the hand must turn to reach the screen edge, which way is positive, and how much to smooth. Those settings are at the top of [`WristDevice.cs`](../Game/Assets/Scripts/Game/WristDevice.cs), so feel can be tuned without reflashing a device.
+The game decides how far the hand must turn to reach the screen edge, which way is positive, and how much to smooth. Those settings are at the top of [`WristDevice.cs`](../Game/Packages/com.sshs.manhattan-swing/Runtime/Game/WristDevice.cs), so feel can be tuned without reflashing a device.
 
 Each device has its own name (`SWING-1`, `SWING-2`, `SWING-3`), set at the top of the firmware. The game uses any controller whose name contains `SWING`.
 

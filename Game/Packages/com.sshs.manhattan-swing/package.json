@@ -1,0 +1,15 @@
+{
+  "name": "com.sshs.manhattan-swing",
+  "version": "0.1.0",
+  "displayName": "Manhattan Swing gameplay",
+  "description": "Web swinging, a ring race, HUD, sound, leaderboard, wrist device input and head-tracking set-up, independent of the map. A scene starts it with SwingGame.Create and an ISwingWorld for its city.",
+  "unity": "6000.3",
+  "author": { "name": "SSHS AI club" },
+  "dependencies": {
+    "com.unity.inputsystem": "1.20.0",
+    "com.unity.modules.audio": "1.0.0",
+    "com.unity.modules.imgui": "1.0.0",
+    "com.unity.modules.physics": "1.0.0"
+  },
+  "keywords": ["swing", "head-tracking", "race"]
+}

@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using NUnit.Framework;
+using ManhattanSwing.Core;
 
-namespace Swing.Core.Tests
+namespace ManhattanSwing.TestMap.Tests
 {
     /// <summary>Checks the real city and route files that ship with the game.</summary>
     public class ShippedDataTests

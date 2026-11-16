@@ -41,6 +41,7 @@ Type a name and press **Enter** to start. After the finish, **R** runs again and
 | K | Capture the face reference for head tracking |
 | F2 | Setup panel: head tracking, monitor size, booth mode, leaderboard reset |
 | F3 | Tuning panel: sliders for the swing, mouse sensitivity, zip style, view follows travel |
+| F4 | Switch collision between the test map's boxes and Unity physics (as on the detailed city), to compare |
 | P | Log your position as a `ring` line, for making routes |
 | Esc | Free the mouse |
 
@@ -48,7 +49,7 @@ A gamepad, if one is connected, moves the reticle with its left stick and holds 
 
 ## 4. Run the tests
 
-**Window → General → Test Runner → EditMode → Run All.** There are 51 tests of the game rules.
+**Window → General → Test Runner → EditMode → Run All.** There are 59 tests: the game rules (under the package) and the test map's files (under Assets).
 
 A run ends as "time up" after 5 minutes (`TimeLimitSeconds` in `Race.cs`).
 
@@ -68,14 +69,18 @@ What was checked before this point is listed in the [plan](PLAN.md#where-we-are)
 
 | Path | What it holds |
 | --- | --- |
-| `Game/Assets/Scripts/Core/` | The game rules as plain C#: collision, swing, route, race. No Unity types. |
-| `Game/Assets/Scripts/Game/` | The Unity side: drawing, input, camera, HUD |
-| `Game/Assets/Scripts/Core/SwingSettings.cs` | Every number that changes how swinging feels. Try values live with F3, then write the good ones here. |
-| `Game/Assets/Scripts/Game/WristDevice.cs` | Reading the wrist device, with its settings at the top |
-| `Game/Assets/Scripts/Core/SoundSynth.cs` | The sound effects, made from maths |
-| `Game/Assets/Scripts/HeadTracking/` | Head tracking set-up for this game |
+| `Game/Packages/com.sshs.manhattan-swing/` | The gameplay as a package, shared with the original repository ([PORTING](PORTING.md)) |
+| `.../Runtime/Core/` | The game rules as plain C#: swing, aim help, route, race, box collision. No Unity types. |
+| `.../Runtime/Core/ISwingWorld.cs` | The four questions the game asks a city; the only link to a map |
+| `.../Runtime/Core/SwingSettings.cs` | Every number that changes how swinging feels. Try values live with F3, then write the good ones here. |
+| `.../Runtime/Game/` | The Unity side: input, camera, HUD, rings, `PhysicsWorld` |
+| `.../Runtime/Game/WristDevice.cs` | Reading the wrist device, with its settings at the top |
+| `.../Runtime/Core/SoundSynth.cs` | The sound effects, made from maths |
+| `.../Runtime/HeadTracking/` | Head tracking set-up for this game |
+| `.../Tests/EditMode/` | Tests of the game rules |
+| `Game/Assets/Scripts/TestMap/` | The light test map: draws the box city and starts the game on it |
 | `Game/Packages/com.headtracked.display/` | The head-tracking package (a copy; do not edit) |
 | `Game/Assets/Resources/route_midtown.txt` | The ring route, a text file you can edit |
 | `Game/Assets/Resources/city.bytes` | The city; rebuilt by `tools/city/` |
-| `Game/Assets/Tests/EditMode/` | Tests |
+| `Game/Assets/Tests/EditMode/` | Tests of the test map's city and route files, including the automatic pilots |
 | `hardware/` | Wrist device firmware and wiring |
